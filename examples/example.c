@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
         .depth = 0,
     };
     struct sivmc_result result =
-        sivmc_execute(vm, host, ctx, SIVMC_HOMESTEAD, &msg, code, code_size);
+        sivmc_execute(vm, host, ctx, SIVMC_SILA_HOMESTEAD, &msg, code, code_size);
     printf("Execution result:\n");
     int exit_code = 0;
     if (result.status_code != SIVMC_SUCCESS)

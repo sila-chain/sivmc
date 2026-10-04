@@ -36,7 +36,7 @@ add_sivmc_tool_test(
 add_sivmc_tool_test(
     default_revision
     "--vm $<TARGET_FILE:sivmc::example-vm> run 00"
-    "Executing on Osaka"
+    "Executing on SilaOsaka"
 )
 
 add_sivmc_tool_test(

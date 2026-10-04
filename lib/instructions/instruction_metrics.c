@@ -33,7 +33,7 @@ enum
     WARM_STORAGE_READ_COST = 100
 };
 
-static struct sivmc_instruction_metrics osaka_metrics[256] = {
+static struct sivmc_instruction_metrics sila_osaka_metrics[256] = {
     /*           STOP = 0x00 */ {ZERO, 0, 0},
     /*            ADD = 0x01 */ {VERYLOW, 2, -1},
     /*            MUL = 0x02 */ {LOW, 2, -1},
@@ -292,7 +292,7 @@ static struct sivmc_instruction_metrics osaka_metrics[256] = {
     /*   SELFDESTRUCT = 0xff */ {5000, 1, -1},
 };
 
-static struct sivmc_instruction_metrics prague_metrics[256] = {
+static struct sivmc_instruction_metrics sila_prague_metrics[256] = {
     /*           STOP = 0x00 */ {ZERO, 0, 0},
     /*            ADD = 0x01 */ {VERYLOW, 2, -1},
     /*            MUL = 0x02 */ {LOW, 2, -1},
@@ -551,7 +551,7 @@ static struct sivmc_instruction_metrics prague_metrics[256] = {
     /*   SELFDESTRUCT = 0xff */ {5000, 1, -1},
 };
 
-static struct sivmc_instruction_metrics cancun_metrics[256] = {
+static struct sivmc_instruction_metrics sila_cancun_metrics[256] = {
     /*           STOP = 0x00 */ {ZERO, 0, 0},
     /*            ADD = 0x01 */ {VERYLOW, 2, -1},
     /*            MUL = 0x02 */ {LOW, 2, -1},
@@ -810,7 +810,7 @@ static struct sivmc_instruction_metrics cancun_metrics[256] = {
     /*   SELFDESTRUCT = 0xff */ {5000, 1, -1},
 };
 
-static struct sivmc_instruction_metrics shanghai_metrics[256] = {
+static struct sivmc_instruction_metrics sila_shanghai_metrics[256] = {
     /*           STOP = 0x00 */ {ZERO, 0, 0},
     /*            ADD = 0x01 */ {VERYLOW, 2, -1},
     /*            MUL = 0x02 */ {LOW, 2, -1},
@@ -1069,7 +1069,7 @@ static struct sivmc_instruction_metrics shanghai_metrics[256] = {
     /*   SELFDESTRUCT = 0xff */ {5000, 1, -1},
 };
 
-static struct sivmc_instruction_metrics london_metrics[256] = {
+static struct sivmc_instruction_metrics sila_london_metrics[256] = {
     /*           STOP = 0x00 */ {ZERO, 0, 0},
     /*            ADD = 0x01 */ {VERYLOW, 2, -1},
     /*            MUL = 0x02 */ {LOW, 2, -1},
@@ -1328,7 +1328,7 @@ static struct sivmc_instruction_metrics london_metrics[256] = {
     /*   SELFDESTRUCT = 0xff */ {5000, 1, -1},
 };
 
-static struct sivmc_instruction_metrics berlin_metrics[256] = {
+static struct sivmc_instruction_metrics sila_berlin_metrics[256] = {
     /*           STOP = 0x00 */ {ZERO, 0, 0},
     /*            ADD = 0x01 */ {VERYLOW, 2, -1},
     /*            MUL = 0x02 */ {LOW, 2, -1},
@@ -1587,7 +1587,7 @@ static struct sivmc_instruction_metrics berlin_metrics[256] = {
     /*   SELFDESTRUCT = 0xff */ {5000, 1, -1},
 };
 
-static struct sivmc_instruction_metrics istanbul_metrics[256] = {
+static struct sivmc_instruction_metrics sila_istanbul_metrics[256] = {
     /*           STOP = 0x00 */ {ZERO, 0, 0},
     /*            ADD = 0x01 */ {VERYLOW, 2, -1},
     /*            MUL = 0x02 */ {LOW, 2, -1},
@@ -1846,7 +1846,7 @@ static struct sivmc_instruction_metrics istanbul_metrics[256] = {
     /*   SELFDESTRUCT = 0xff */ {5000, 1, -1},
 };
 
-static struct sivmc_instruction_metrics petersburg_metrics[256] = {
+static struct sivmc_instruction_metrics sila_constantinople_fix_metrics[256] = {
     /*           STOP = 0x00 */ {ZERO, 0, 0},
     /*            ADD = 0x01 */ {VERYLOW, 2, -1},
     /*            MUL = 0x02 */ {LOW, 2, -1},
@@ -2105,7 +2105,7 @@ static struct sivmc_instruction_metrics petersburg_metrics[256] = {
     /*   SELFDESTRUCT = 0xff */ {5000, 1, -1},
 };
 
-static struct sivmc_instruction_metrics byzantium_metrics[256] = {
+static struct sivmc_instruction_metrics sila_byzantium_metrics[256] = {
     /*           STOP = 0x00 */ {ZERO, 0, 0},
     /*            ADD = 0x01 */ {VERYLOW, 2, -1},
     /*            MUL = 0x02 */ {LOW, 2, -1},
@@ -2364,7 +2364,7 @@ static struct sivmc_instruction_metrics byzantium_metrics[256] = {
     /*   SELFDESTRUCT = 0xff */ {5000, 1, -1},
 };
 
-static struct sivmc_instruction_metrics tangerine_whistle_metrics[256] = {
+static struct sivmc_instruction_metrics sip150_metrics[256] = {
     /*           STOP = 0x00 */ {ZERO, 0, 0},
     /*            ADD = 0x01 */ {VERYLOW, 2, -1},
     /*            MUL = 0x02 */ {LOW, 2, -1},
@@ -2623,7 +2623,7 @@ static struct sivmc_instruction_metrics tangerine_whistle_metrics[256] = {
     /*   SELFDESTRUCT = 0xff */ {5000, 1, -1},
 };
 
-static struct sivmc_instruction_metrics homestead_metrics[256] = {
+static struct sivmc_instruction_metrics sila_homestead_metrics[256] = {
     /*           STOP = 0x00 */ {ZERO, 0, 0},
     /*            ADD = 0x01 */ {VERYLOW, 2, -1},
     /*            MUL = 0x02 */ {LOW, 2, -1},
@@ -3147,31 +3147,31 @@ const struct sivmc_instruction_metrics* sivmc_get_instruction_metrics_table(
     switch (revision)
     {
     case SIVMC_EXPERIMENTAL:
-    case SIVMC_AMSTERDAM:
-    case SIVMC_OSAKA:
-        return osaka_metrics;
-    case SIVMC_PRAGUE:
-        return prague_metrics;
-    case SIVMC_CANCUN:
-        return cancun_metrics;
-    case SIVMC_SHANGHAI:
-        return shanghai_metrics;
-    case SIVMC_PARIS:
-    case SIVMC_LONDON:
-        return london_metrics;
-    case SIVMC_BERLIN:
-        return berlin_metrics;
-    case SIVMC_ISTANBUL:
-        return istanbul_metrics;
-    case SIVMC_PETERSBURG:
-        return petersburg_metrics;
-    case SIVMC_BYZANTIUM:
-        return byzantium_metrics;
-    case SIVMC_SPURIOUS_DRAGON:
-    case SIVMC_TANGERINE_WHISTLE:
-        return tangerine_whistle_metrics;
-    case SIVMC_HOMESTEAD:
-        return homestead_metrics;
+    case SIVMC_SILA_AMSTERDAM:
+    case SIVMC_SILA_OSAKA:
+        return sila_osaka_metrics;
+    case SIVMC_SILA_PRAGUE:
+        return sila_prague_metrics;
+    case SIVMC_SILA_CANCUN:
+        return sila_cancun_metrics;
+    case SIVMC_SILA_SHANGHAI:
+        return sila_shanghai_metrics;
+    case SIVMC_SILA_PARIS:
+    case SIVMC_SILA_LONDON:
+        return sila_london_metrics;
+    case SIVMC_SILA_BERLIN:
+        return sila_berlin_metrics;
+    case SIVMC_SILA_ISTANBUL:
+        return sila_istanbul_metrics;
+    case SIVMC_SILA_CONSTANTINOPLE_FIX:
+        return sila_constantinople_fix_metrics;
+    case SIVMC_SILA_BYZANTIUM:
+        return sila_byzantium_metrics;
+    case SIVMC_SIP158:
+    case SIVMC_SIP150:
+        return sip150_metrics;
+    case SIVMC_SILA_HOMESTEAD:
+        return sila_homestead_metrics;
     case SIVMC_FRONTIER:
         return frontier_metrics;
     default:

@@ -180,7 +180,7 @@ enum sivmc_opcode
 };
 
 /**
- * Metrics for an Sivm 1 instruction.
+ * Metrics for a Sivm 1 instruction.
  *
  * Small integer types are used here to make the tables of metrics smaller.
  */

@@ -97,24 +97,24 @@ const (
 type Revision int32
 
 const (
-	Frontier             Revision = C.SIVMC_FRONTIER
-	Homestead            Revision = C.SIVMC_HOMESTEAD
-	TangerineWhistle     Revision = C.SIVMC_TANGERINE_WHISTLE
-	SpuriousDragon       Revision = C.SIVMC_SPURIOUS_DRAGON
-	Byzantium            Revision = C.SIVMC_BYZANTIUM
-	Petersburg           Revision = C.SIVMC_PETERSBURG
-	Istanbul             Revision = C.SIVMC_ISTANBUL
-	Berlin               Revision = C.SIVMC_BERLIN
-	London               Revision = C.SIVMC_LONDON
-	Paris                Revision = C.SIVMC_PARIS
-	Shanghai             Revision = C.SIVMC_SHANGHAI
-	Cancun               Revision = C.SIVMC_CANCUN
-	Prague               Revision = C.SIVMC_PRAGUE
-	Osaka                Revision = C.SIVMC_OSAKA
-	Amsterdam            Revision = C.SIVMC_AMSTERDAM
-	Experimental         Revision = C.SIVMC_EXPERIMENTAL
-	MaxRevision          Revision = C.SIVMC_MAX_REVISION
-	LatestStableRevision Revision = C.SIVMC_LATEST_STABLE_REVISION
+	Frontier              Revision = C.SIVMC_FRONTIER
+	SilaHomestead         Revision = C.SIVMC_SILA_HOMESTEAD
+	SIP150                Revision = C.SIVMC_SIP150
+	SIP158                Revision = C.SIVMC_SIP158
+	SilaByzantium         Revision = C.SIVMC_SILA_BYZANTIUM
+	SilaConstantinopleFix Revision = C.SIVMC_SILA_CONSTANTINOPLE_FIX
+	SilaIstanbul          Revision = C.SIVMC_SILA_ISTANBUL
+	SilaBerlin            Revision = C.SIVMC_SILA_BERLIN
+	SilaLondon            Revision = C.SIVMC_SILA_LONDON
+	SilaParis             Revision = C.SIVMC_SILA_PARIS
+	SilaShanghai          Revision = C.SIVMC_SILA_SHANGHAI
+	SilaCancun            Revision = C.SIVMC_SILA_CANCUN
+	SilaPrague            Revision = C.SIVMC_SILA_PRAGUE
+	SilaOsaka             Revision = C.SIVMC_SILA_OSAKA
+	SilaAmsterdam         Revision = C.SIVMC_SILA_AMSTERDAM
+	Experimental          Revision = C.SIVMC_EXPERIMENTAL
+	MaxRevision           Revision = C.SIVMC_MAX_REVISION
+	LatestStableRevision  Revision = C.SIVMC_LATEST_STABLE_REVISION
 )
 
 type VM struct {

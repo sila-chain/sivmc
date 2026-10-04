@@ -17,6 +17,9 @@ SIVMC, the Sila VM Connector API, starts here.
   and results carry state gas, the transaction context carries the slot number,
   and the capabilities, the CREATE2 salt, the result optional storage and the
   Constantinople revision are gone.
+- Revisions are named after the Sila forks (`SIVMC_SILA_HOMESTEAD`, `SIVMC_SIP150`,
+  `SIVMC_SIP158` … `SIVMC_SILA_AMSTERDAM`), also in `sivmc_revision_to_string()`
+  and the Go and Rust bindings; each revision has a single name.
 - Improvement proposals are referenced as SIPs.
 
 

@@ -352,7 +352,7 @@ sivmc_result execute(sivmc_vm* instance,
 
         case OP_REVERT:
         {
-            if (rev < SIVMC_BYZANTIUM)
+            if (rev < SIVMC_SILA_BYZANTIUM)
                 return sivmc_make_result(SIVMC_UNDEFINED_INSTRUCTION, 0, 0, nullptr, 0);
 
             uint32_t output_offset = to_uint32(stack.pop());

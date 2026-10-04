@@ -165,7 +165,7 @@ mod tests {
         assert_eq!(
             container
                 .execute(
-                    sivmc_sys::sivmc_revision::SIVMC_PETERSBURG,
+                    sivmc_sys::sivmc_revision::SIVMC_SILA_CONSTANTINOPLE_FIX,
                     &code,
                     &message,
                     Some(&mut context)
@@ -181,7 +181,7 @@ mod tests {
         assert_eq!(
             container
                 .execute(
-                    sivmc_sys::sivmc_revision::SIVMC_PETERSBURG,
+                    sivmc_sys::sivmc_revision::SIVMC_SILA_CONSTANTINOPLE_FIX,
                     &code,
                     &message,
                     Some(&mut context)

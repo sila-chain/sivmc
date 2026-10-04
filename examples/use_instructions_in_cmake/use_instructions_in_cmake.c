@@ -8,5 +8,5 @@
 
 int main()
 {
-    return sivmc_get_instruction_metrics_table(SIVMC_BYZANTIUM)[OP_STOP].gas_cost;
+    return sivmc_get_instruction_metrics_table(SIVMC_SILA_BYZANTIUM)[OP_STOP].gas_cost;
 }

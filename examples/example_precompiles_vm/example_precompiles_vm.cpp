@@ -87,7 +87,7 @@ sivmc_result execute(sivmc_vm* /*vm*/,
     case 0x0006:  // SNARKV
     case 0x0007:  // BNADD
     case 0x0008:  // BNMUL
-        if (rev < SIVMC_BYZANTIUM)
+        if (rev < SIVMC_SILA_BYZANTIUM)
             return execute_empty(msg);
         return not_implemented();
 

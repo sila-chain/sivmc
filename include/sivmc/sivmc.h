@@ -85,22 +85,22 @@ typedef struct sivmc_address
 enum sivmc_call_kind
 {
     SIVMC_CALL = 0,         /**< Request CALL. */
-    SIVMC_DELEGATECALL = 1, /**< Request DELEGATECALL. Valid since Homestead.
+    SIVMC_DELEGATECALL = 1, /**< Request DELEGATECALL. Valid since SilaHomestead.
                                 The value param ignored. */
     SIVMC_CALLCODE = 2,     /**< Request CALLCODE. */
     SIVMC_CREATE = 3,       /**< Request CREATE. */
-    SIVMC_CREATE2 = 4,      /**< Request CREATE2. Valid since Petersburg. */
+    SIVMC_CREATE2 = 4,      /**< Request CREATE2. Valid since SilaConstantinopleFix. */
 };
 
 /** The flags for ::sivmc_message. */
 enum sivmc_flags
 {
     SIVMC_STATIC = 1,   /**< Static call mode. */
-    SIVMC_DELEGATED = 2 /**< Delegated call mode (SIP-7702). Valid since Prague. */
+    SIVMC_DELEGATED = 2 /**< Delegated call mode (SIP-7702). Valid since SilaPrague. */
 };
 
 /**
- * The message describing an Sivm call, including a zero-depth calls from a transaction origin.
+ * The message describing a Sivm call, including a zero-depth calls from a transaction origin.
  *
  * Most of the fields are modelled by the section 8. Message Call of the Sila Yellow Paper.
  */
@@ -233,7 +233,7 @@ struct sivmc_host_context;
 /**
  * Get transaction context callback function.
  *
- *  This callback function is used by an Sivm to retrieve the transaction and
+ *  This callback function is used by a Sivm to retrieve the transaction and
  *  block context.
  *
  *  @param      context  The pointer to the Host execution context.
@@ -269,7 +269,7 @@ typedef sivmc_bytes32 (*sivmc_get_block_hash_fn)(struct sivmc_host_context* cont
  * to the caller. They MAY be handled by the Client in predefined manner
  * (see e.g. ::SIVMC_REJECTED), otherwise internal errors are not recoverable.
  * The generic representant of errors is ::SIVMC_INTERNAL_ERROR but
- * an Sivm implementation MAY return negative status codes that are not defined
+ * a Sivm implementation MAY return negative status codes that are not defined
  * in the SIVMC documentation.
  *
  * @note
@@ -374,7 +374,7 @@ enum sivmc_status_code
      *
      * This error SHOULD be used to signal that the Sivm is not able to or
      * willing to execute the given code type or message.
-     * If an Sivm returns the ::SIVMC_REJECTED status code,
+     * If a Sivm returns the ::SIVMC_REJECTED status code,
      * the Client MAY try to execute it in other Sivm implementation.
      * For example, the Client tries running a code in the Sivm 1.5. If the
      * code is not supported there, the execution falls back to the Sivm 1.0.
@@ -724,7 +724,7 @@ typedef sivmc_bytes32 (*sivmc_get_code_hash_fn)(struct sivmc_host_context* conte
 /**
  * Copy code callback function.
  *
- * This callback function is used by an Sivm to request a copy of the code
+ * This callback function is used by a Sivm to request a copy of the code
  * of the given account to the memory buffer provided by the Sivm.
  * The Client MUST copy the requested code, starting with the given offset,
  * to the provided memory buffer up to the size of the buffer or the size of
@@ -747,7 +747,7 @@ typedef size_t (*sivmc_copy_code_fn)(struct sivmc_host_context* context,
 /**
  * Selfdestruct callback function.
  *
- * This callback function is used by an Sivm to SELFDESTRUCT given contract.
+ * This callback function is used by a Sivm to SELFDESTRUCT given contract.
  * The execution of the contract will not be stopped, that is up to the Sivm.
  *
  * @param context      The pointer to the Host execution context. See ::sivmc_host_context.
@@ -763,8 +763,8 @@ typedef bool (*sivmc_selfdestruct_fn)(struct sivmc_host_context* context,
 /**
  * Log callback function.
  *
- * This callback function is used by an Sivm to inform about a LOG that happened
- * during an Sivm bytecode execution.
+ * This callback function is used by a Sivm to inform about a LOG that happened
+ * during a Sivm bytecode execution.
  *
  * @param context       The pointer to the Host execution context. See ::sivmc_host_context.
  * @param address       The address of the contract that generated the log.
@@ -956,104 +956,102 @@ enum sivmc_revision
     SIVMC_FRONTIER,
 
     /**
-     * The Homestead revision.
+     * The SilaHomestead revision.
      *
      * https://github.com/sila-chain/SIPs/blob/main/SIPS/sip-606.md
      */
-    SIVMC_HOMESTEAD,
+    SIVMC_SILA_HOMESTEAD,
 
     /**
-     * The Tangerine Whistle revision.
+     * The SIP150 revision.
      *
      * https://github.com/sila-chain/SIPs/blob/main/SIPS/sip-608.md
      */
-    SIVMC_TANGERINE_WHISTLE,
+    SIVMC_SIP150,
 
     /**
-     * The Spurious Dragon revision.
+     * The SIP158 revision.
      *
      * https://github.com/sila-chain/SIPs/blob/main/SIPS/sip-607.md
      */
-    SIVMC_SPURIOUS_DRAGON,
+    SIVMC_SIP158,
 
     /**
-     * The Byzantium revision.
+     * The SilaByzantium revision.
      *
      * https://github.com/sila-chain/SIPs/blob/main/SIPS/sip-609.md
      */
-    SIVMC_BYZANTIUM,
+    SIVMC_SILA_BYZANTIUM,
 
     /**
-     * The Petersburg revision.
-     *
-     * Other names: Constantinople2, ConstantinopleFix.
+     * The SilaConstantinopleFix revision.
      *
      * https://github.com/sila-chain/SIPs/blob/main/SIPS/sip-1716.md
      */
-    SIVMC_PETERSBURG,
+    SIVMC_SILA_CONSTANTINOPLE_FIX,
 
     /**
-     * The Istanbul revision.
+     * The SilaIstanbul revision.
      *
      * https://github.com/sila-chain/SIPs/blob/main/SIPS/sip-1679.md
      */
-    SIVMC_ISTANBUL,
+    SIVMC_SILA_ISTANBUL,
 
     /**
-     * The Berlin revision.
+     * The SilaBerlin revision.
      *
      * https://github.com/sila-chain/execution-specs/blob/313dbf0f689a695a149ff981f4fcad73ba46173c/src/sila/forks/berlin/__init__.py
      */
-    SIVMC_BERLIN,
+    SIVMC_SILA_BERLIN,
 
     /**
-     * The London revision.
+     * The SilaLondon revision.
      *
      * https://github.com/sila-chain/execution-specs/blob/313dbf0f689a695a149ff981f4fcad73ba46173c/src/sila/forks/london/__init__.py
      */
-    SIVMC_LONDON,
+    SIVMC_SILA_LONDON,
 
     /**
-     * The Paris revision (aka The Merge).
+     * The SilaParis revision.
      *
      * https://github.com/sila-chain/execution-specs/blob/313dbf0f689a695a149ff981f4fcad73ba46173c/src/sila/forks/paris/__init__.py
      */
-    SIVMC_PARIS,
+    SIVMC_SILA_PARIS,
 
     /**
-     * The Shanghai revision.
+     * The SilaShanghai revision.
      *
      * https://github.com/sila-chain/execution-specs/blob/313dbf0f689a695a149ff981f4fcad73ba46173c/src/sila/forks/shanghai/__init__.py
      */
-    SIVMC_SHANGHAI,
+    SIVMC_SILA_SHANGHAI,
 
     /**
-     * The Cancun revision.
+     * The SilaCancun revision.
      *
      * https://github.com/sila-chain/execution-specs/blob/313dbf0f689a695a149ff981f4fcad73ba46173c/src/sila/forks/cancun/__init__.py
      */
-    SIVMC_CANCUN,
+    SIVMC_SILA_CANCUN,
 
     /**
-     * The Prague / Pectra revision.
+     * The SilaPrague revision.
      *
      * https://github.com/sila-chain/SIPs/blob/main/SIPS/sip-7600.md
      */
-    SIVMC_PRAGUE,
+    SIVMC_SILA_PRAGUE,
 
     /**
-     * The Osaka / Fusaka revision.
+     * The SilaOsaka revision.
      *
      * https://github.com/sila-chain/SIPs/blob/main/SIPS/sip-7607.md
      */
-    SIVMC_OSAKA,
+    SIVMC_SILA_OSAKA,
 
     /**
-     * The Amsterdam / Glamsterdam revision.
+     * The SilaAmsterdam revision.
      *
      * https://github.com/sila-chain/SIPs/blob/main/SIPS/sip-7773.md
      */
-    SIVMC_AMSTERDAM,
+    SIVMC_SILA_AMSTERDAM,
 
     /**
      * The unspecified Sivm revision used for Sivm implementations to expose
@@ -1069,7 +1067,7 @@ enum sivmc_revision
      *
      * This is handy for Sivm tools to always use the latest revision available.
      */
-    SIVMC_LATEST_STABLE_REVISION = SIVMC_OSAKA
+    SIVMC_LATEST_STABLE_REVISION = SIVMC_SILA_OSAKA
 };
 
 
@@ -1157,7 +1155,7 @@ struct sivmc_vm
 /**
  * Example of a function creating an instance of an example Sivm implementation.
  *
- * Each Sivm implementation MUST provide a function returning an Sivm instance.
+ * Each Sivm implementation MUST provide a function returning a Sivm instance.
  * The function SHOULD be named `sivmc_create_<vm-name>(void)`. If the VM name contains hyphens
  * replaces them with underscores in the function names.
  *

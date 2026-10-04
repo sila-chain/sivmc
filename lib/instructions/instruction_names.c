@@ -4,7 +4,7 @@
 
 #include <sivmc/instructions.h>
 
-static const char* osaka_names[256] = {
+static const char* sila_osaka_names[256] = {
     /* 0x00 */ "STOP",
     /* 0x01 */ "ADD",
     /* 0x02 */ "MUL",
@@ -263,7 +263,7 @@ static const char* osaka_names[256] = {
     /* 0xff */ "SELFDESTRUCT",
 };
 
-static const char* prague_names[256] = {
+static const char* sila_prague_names[256] = {
     /* 0x00 */ "STOP",
     /* 0x01 */ "ADD",
     /* 0x02 */ "MUL",
@@ -522,7 +522,7 @@ static const char* prague_names[256] = {
     /* 0xff */ "SELFDESTRUCT",
 };
 
-static const char* cancun_names[256] = {
+static const char* sila_cancun_names[256] = {
     /* 0x00 */ "STOP",
     /* 0x01 */ "ADD",
     /* 0x02 */ "MUL",
@@ -781,7 +781,7 @@ static const char* cancun_names[256] = {
     /* 0xff */ "SELFDESTRUCT",
 };
 
-static const char* shanghai_names[256] = {
+static const char* sila_shanghai_names[256] = {
     /* 0x00 */ "STOP",
     /* 0x01 */ "ADD",
     /* 0x02 */ "MUL",
@@ -1040,7 +1040,7 @@ static const char* shanghai_names[256] = {
     /* 0xff */ "SELFDESTRUCT",
 };
 
-static const char* paris_names[256] = {
+static const char* sila_paris_names[256] = {
     /* 0x00 */ "STOP",
     /* 0x01 */ "ADD",
     /* 0x02 */ "MUL",
@@ -1299,7 +1299,7 @@ static const char* paris_names[256] = {
     /* 0xff */ "SELFDESTRUCT",
 };
 
-static const char* london_names[256] = {
+static const char* sila_london_names[256] = {
     /* 0x00 */ "STOP",
     /* 0x01 */ "ADD",
     /* 0x02 */ "MUL",
@@ -1558,7 +1558,7 @@ static const char* london_names[256] = {
     /* 0xff */ "SELFDESTRUCT",
 };
 
-static const char* istanbul_names[256] = {
+static const char* sila_istanbul_names[256] = {
     /* 0x00 */ "STOP",
     /* 0x01 */ "ADD",
     /* 0x02 */ "MUL",
@@ -1817,7 +1817,7 @@ static const char* istanbul_names[256] = {
     /* 0xff */ "SELFDESTRUCT",
 };
 
-static const char* petersburg_names[256] = {
+static const char* sila_constantinople_fix_names[256] = {
     /* 0x00 */ "STOP",
     /* 0x01 */ "ADD",
     /* 0x02 */ "MUL",
@@ -2076,7 +2076,7 @@ static const char* petersburg_names[256] = {
     /* 0xff */ "SELFDESTRUCT",
 };
 
-static const char* byzantium_names[256] = {
+static const char* sila_byzantium_names[256] = {
     /* 0x00 */ "STOP",
     /* 0x01 */ "ADD",
     /* 0x02 */ "MUL",
@@ -2335,7 +2335,7 @@ static const char* byzantium_names[256] = {
     /* 0xff */ "SELFDESTRUCT",
 };
 
-static const char* homestead_names[256] = {
+static const char* sila_homestead_names[256] = {
     /* 0x00 */ "STOP",
     /* 0x01 */ "ADD",
     /* 0x02 */ "MUL",
@@ -2858,30 +2858,30 @@ const char* const* sivmc_get_instruction_names_table(enum sivmc_revision revisio
     switch (revision)
     {
     case SIVMC_EXPERIMENTAL:
-    case SIVMC_AMSTERDAM:
-    case SIVMC_OSAKA:
-        return osaka_names;
-    case SIVMC_PRAGUE:
-        return prague_names;
-    case SIVMC_CANCUN:
-        return cancun_names;
-    case SIVMC_SHANGHAI:
-        return shanghai_names;
-    case SIVMC_PARIS:
-        return paris_names;
-    case SIVMC_LONDON:
-        return london_names;
-    case SIVMC_BERLIN:
-    case SIVMC_ISTANBUL:
-        return istanbul_names;
-    case SIVMC_PETERSBURG:
-        return petersburg_names;
-    case SIVMC_BYZANTIUM:
-        return byzantium_names;
-    case SIVMC_SPURIOUS_DRAGON:
-    case SIVMC_TANGERINE_WHISTLE:
-    case SIVMC_HOMESTEAD:
-        return homestead_names;
+    case SIVMC_SILA_AMSTERDAM:
+    case SIVMC_SILA_OSAKA:
+        return sila_osaka_names;
+    case SIVMC_SILA_PRAGUE:
+        return sila_prague_names;
+    case SIVMC_SILA_CANCUN:
+        return sila_cancun_names;
+    case SIVMC_SILA_SHANGHAI:
+        return sila_shanghai_names;
+    case SIVMC_SILA_PARIS:
+        return sila_paris_names;
+    case SIVMC_SILA_LONDON:
+        return sila_london_names;
+    case SIVMC_SILA_BERLIN:
+    case SIVMC_SILA_ISTANBUL:
+        return sila_istanbul_names;
+    case SIVMC_SILA_CONSTANTINOPLE_FIX:
+        return sila_constantinople_fix_names;
+    case SIVMC_SILA_BYZANTIUM:
+        return sila_byzantium_names;
+    case SIVMC_SIP158:
+    case SIVMC_SIP150:
+    case SIVMC_SILA_HOMESTEAD:
+        return sila_homestead_names;
     case SIVMC_FRONTIER:
         return frontier_names;
     default:

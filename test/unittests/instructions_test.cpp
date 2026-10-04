@@ -33,12 +33,12 @@ TEST(instructions, name_gas_cost_equivalence)
     }
 }
 
-TEST(instructions, homestead_hard_fork)
+TEST(instructions, sila_homestead_hard_fork)
 {
     const auto f = sivmc_get_instruction_metrics_table(SIVMC_FRONTIER);
-    const auto h = sivmc_get_instruction_metrics_table(SIVMC_HOMESTEAD);
+    const auto h = sivmc_get_instruction_metrics_table(SIVMC_SILA_HOMESTEAD);
     const auto fn = sivmc_get_instruction_names_table(SIVMC_FRONTIER);
-    const auto hn = sivmc_get_instruction_names_table(SIVMC_HOMESTEAD);
+    const auto hn = sivmc_get_instruction_names_table(SIVMC_SILA_HOMESTEAD);
 
     for (int op = 0x00; op <= 0xff; ++op)
     {
@@ -59,12 +59,12 @@ TEST(instructions, homestead_hard_fork)
     EXPECT_EQ(hn[OP_DELEGATECALL], std::string{"DELEGATECALL"});
 }
 
-TEST(instructions, tangerine_whistle_hard_fork)
+TEST(instructions, sip150_hard_fork)
 {
-    const auto h = sivmc_get_instruction_metrics_table(SIVMC_HOMESTEAD);
-    const auto tw = sivmc_get_instruction_metrics_table(SIVMC_TANGERINE_WHISTLE);
-    const auto hn = sivmc_get_instruction_names_table(SIVMC_HOMESTEAD);
-    const auto twn = sivmc_get_instruction_names_table(SIVMC_TANGERINE_WHISTLE);
+    const auto h = sivmc_get_instruction_metrics_table(SIVMC_SILA_HOMESTEAD);
+    const auto tw = sivmc_get_instruction_metrics_table(SIVMC_SIP150);
+    const auto hn = sivmc_get_instruction_names_table(SIVMC_SILA_HOMESTEAD);
+    const auto twn = sivmc_get_instruction_names_table(SIVMC_SIP150);
 
     for (int op = 0x00; op <= 0xff; ++op)
     {
@@ -111,12 +111,12 @@ TEST(instructions, tangerine_whistle_hard_fork)
     EXPECT_EQ(tw[OP_SELFDESTRUCT].gas_cost, 5000);
 }
 
-TEST(instructions, spurious_dragon_hard_fork)
+TEST(instructions, sip158_hard_fork)
 {
-    const auto sd = sivmc_get_instruction_metrics_table(SIVMC_SPURIOUS_DRAGON);
-    const auto tw = sivmc_get_instruction_metrics_table(SIVMC_TANGERINE_WHISTLE);
-    const auto sdn = sivmc_get_instruction_names_table(SIVMC_SPURIOUS_DRAGON);
-    const auto twn = sivmc_get_instruction_names_table(SIVMC_TANGERINE_WHISTLE);
+    const auto sd = sivmc_get_instruction_metrics_table(SIVMC_SIP158);
+    const auto tw = sivmc_get_instruction_metrics_table(SIVMC_SIP150);
+    const auto sdn = sivmc_get_instruction_names_table(SIVMC_SIP158);
+    const auto twn = sivmc_get_instruction_names_table(SIVMC_SIP150);
 
     for (int op = 0x00; op <= 0xff; ++op)
     {
@@ -135,12 +135,12 @@ TEST(instructions, spurious_dragon_hard_fork)
     EXPECT_EQ(tw[OP_EXP].gas_cost, 10);
 }
 
-TEST(instructions, byzantium_hard_fork)
+TEST(instructions, sila_byzantium_hard_fork)
 {
-    const auto b = sivmc_get_instruction_metrics_table(SIVMC_BYZANTIUM);
-    const auto sd = sivmc_get_instruction_metrics_table(SIVMC_SPURIOUS_DRAGON);
-    const auto bn = sivmc_get_instruction_names_table(SIVMC_BYZANTIUM);
-    const auto sdn = sivmc_get_instruction_names_table(SIVMC_SPURIOUS_DRAGON);
+    const auto b = sivmc_get_instruction_metrics_table(SIVMC_SILA_BYZANTIUM);
+    const auto sd = sivmc_get_instruction_metrics_table(SIVMC_SIP158);
+    const auto bn = sivmc_get_instruction_names_table(SIVMC_SILA_BYZANTIUM);
+    const auto sdn = sivmc_get_instruction_names_table(SIVMC_SIP158);
 
     for (int op = 0x00; op <= 0xff; ++op)
     {
@@ -181,12 +181,12 @@ TEST(instructions, byzantium_hard_fork)
     EXPECT_TRUE(sdn[OP_STATICCALL] == nullptr);
 }
 
-TEST(instructions, petersburg_hard_fork)
+TEST(instructions, sila_constantinople_fix_hard_fork)
 {
-    const auto c = sivmc_get_instruction_metrics_table(SIVMC_PETERSBURG);
-    const auto b = sivmc_get_instruction_metrics_table(SIVMC_BYZANTIUM);
-    const auto cn = sivmc_get_instruction_names_table(SIVMC_PETERSBURG);
-    const auto bn = sivmc_get_instruction_names_table(SIVMC_BYZANTIUM);
+    const auto c = sivmc_get_instruction_metrics_table(SIVMC_SILA_CONSTANTINOPLE_FIX);
+    const auto b = sivmc_get_instruction_metrics_table(SIVMC_SILA_BYZANTIUM);
+    const auto cn = sivmc_get_instruction_names_table(SIVMC_SILA_CONSTANTINOPLE_FIX);
+    const auto bn = sivmc_get_instruction_names_table(SIVMC_SILA_BYZANTIUM);
 
     for (int op = 0x00; op <= 0xff; ++op)
     {
@@ -228,12 +228,12 @@ TEST(instructions, petersburg_hard_fork)
     EXPECT_TRUE(bn[OP_EXTCODEHASH] == nullptr);
 }
 
-TEST(instructions, istanbul_hard_fork)
+TEST(instructions, sila_istanbul_hard_fork)
 {
-    const auto i = sivmc_get_instruction_metrics_table(SIVMC_ISTANBUL);
-    const auto p = sivmc_get_instruction_metrics_table(SIVMC_PETERSBURG);
-    const auto in = sivmc_get_instruction_names_table(SIVMC_ISTANBUL);
-    const auto pn = sivmc_get_instruction_names_table(SIVMC_PETERSBURG);
+    const auto i = sivmc_get_instruction_metrics_table(SIVMC_SILA_ISTANBUL);
+    const auto p = sivmc_get_instruction_metrics_table(SIVMC_SILA_CONSTANTINOPLE_FIX);
+    const auto in = sivmc_get_instruction_names_table(SIVMC_SILA_ISTANBUL);
+    const auto pn = sivmc_get_instruction_names_table(SIVMC_SILA_CONSTANTINOPLE_FIX);
 
     for (int op = 0x00; op <= 0xff; ++op)
     {
@@ -272,12 +272,12 @@ TEST(instructions, istanbul_hard_fork)
     EXPECT_EQ(i[OP_SLOAD].gas_cost, 800);
 }
 
-TEST(instructions, berlin_hard_fork)
+TEST(instructions, sila_berlin_hard_fork)
 {
-    const auto b = sivmc_get_instruction_metrics_table(SIVMC_BERLIN);
-    const auto i = sivmc_get_instruction_metrics_table(SIVMC_ISTANBUL);
-    const auto bn = sivmc_get_instruction_names_table(SIVMC_BERLIN);
-    const auto in = sivmc_get_instruction_names_table(SIVMC_ISTANBUL);
+    const auto b = sivmc_get_instruction_metrics_table(SIVMC_SILA_BERLIN);
+    const auto i = sivmc_get_instruction_metrics_table(SIVMC_SILA_ISTANBUL);
+    const auto bn = sivmc_get_instruction_names_table(SIVMC_SILA_BERLIN);
+    const auto in = sivmc_get_instruction_names_table(SIVMC_SILA_ISTANBUL);
 
     for (int op = 0x00; op <= 0xff; ++op)
     {
@@ -313,12 +313,12 @@ TEST(instructions, berlin_hard_fork)
     EXPECT_EQ(b[OP_SLOAD].gas_cost, 100);
 }
 
-TEST(instructions, london_hard_fork)
+TEST(instructions, sila_london_hard_fork)
 {
-    const auto l = sivmc_get_instruction_metrics_table(SIVMC_LONDON);
-    const auto b = sivmc_get_instruction_metrics_table(SIVMC_BERLIN);
-    const auto ln = sivmc_get_instruction_names_table(SIVMC_LONDON);
-    const auto bn = sivmc_get_instruction_names_table(SIVMC_BERLIN);
+    const auto l = sivmc_get_instruction_metrics_table(SIVMC_SILA_LONDON);
+    const auto b = sivmc_get_instruction_metrics_table(SIVMC_SILA_BERLIN);
+    const auto ln = sivmc_get_instruction_names_table(SIVMC_SILA_LONDON);
+    const auto bn = sivmc_get_instruction_names_table(SIVMC_SILA_BERLIN);
 
     for (int op = 0x00; op <= 0xff; ++op)
     {
@@ -338,12 +338,12 @@ TEST(instructions, london_hard_fork)
     EXPECT_TRUE(bn[OP_BASEFEE] == nullptr);
 }
 
-TEST(instructions, paris_hard_fork)
+TEST(instructions, sila_paris_hard_fork)
 {
-    const auto p = sivmc_get_instruction_metrics_table(SIVMC_PARIS);
-    const auto l = sivmc_get_instruction_metrics_table(SIVMC_LONDON);
-    const auto pn = sivmc_get_instruction_names_table(SIVMC_PARIS);
-    const auto ln = sivmc_get_instruction_names_table(SIVMC_LONDON);
+    const auto p = sivmc_get_instruction_metrics_table(SIVMC_SILA_PARIS);
+    const auto l = sivmc_get_instruction_metrics_table(SIVMC_SILA_LONDON);
+    const auto pn = sivmc_get_instruction_names_table(SIVMC_SILA_PARIS);
+    const auto ln = sivmc_get_instruction_names_table(SIVMC_SILA_LONDON);
 
     for (int op = 0x00; op <= 0xff; ++op)
     {
@@ -357,12 +357,12 @@ TEST(instructions, paris_hard_fork)
     EXPECT_EQ(ln[OP_PREVRANDAO], std::string{"DIFFICULTY"});
 }
 
-TEST(instructions, shanghai_hard_fork)
+TEST(instructions, sila_shanghai_hard_fork)
 {
-    const auto s = sivmc_get_instruction_metrics_table(SIVMC_SHANGHAI);
-    const auto p = sivmc_get_instruction_metrics_table(SIVMC_PARIS);
-    const auto sn = sivmc_get_instruction_names_table(SIVMC_SHANGHAI);
-    const auto pn = sivmc_get_instruction_names_table(SIVMC_PARIS);
+    const auto s = sivmc_get_instruction_metrics_table(SIVMC_SILA_SHANGHAI);
+    const auto p = sivmc_get_instruction_metrics_table(SIVMC_SILA_PARIS);
+    const auto sn = sivmc_get_instruction_names_table(SIVMC_SILA_SHANGHAI);
+    const auto pn = sivmc_get_instruction_names_table(SIVMC_SILA_PARIS);
 
     for (int op = 0x00; op <= 0xff; ++op)
     {

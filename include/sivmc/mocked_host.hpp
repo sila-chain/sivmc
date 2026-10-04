@@ -434,8 +434,8 @@ public:
 
     /// Record an account access.
     ///
-    /// This method is required by SIP-2929 introduced in ::SIVMC_BERLIN. It will record the account
-    /// access in MockedHost::recorded_account_accesses and return previous access status.
+    /// This method is required by SIP-2929 introduced in ::SIVMC_SILA_BERLIN. It will record the
+    /// account access in MockedHost::recorded_account_accesses and return previous access status.
     /// This methods returns ::SIVMC_ACCESS_WARM for known addresses of precompiles.
     /// The SIP-2929 specifies that sivmc_message::sender and sivmc_message::recipient are always
     /// ::SIVMC_ACCESS_WARM. Therefore, you should init the MockedHost with:
@@ -467,7 +467,7 @@ public:
 
     /// Access the account's storage value at the given key.
     ///
-    /// This method is required by SIP-2929 introduced in ::SIVMC_BERLIN. In records
+    /// This method is required by SIP-2929 introduced in ::SIVMC_SILA_BERLIN. In records
     /// that the given account's storage key has been access and returns the
     /// previous access status. To mock storage access list (SIP-2930), you can
     /// pre-init account's storage values with the ::SIVMC_ACCESS_WARM flag:

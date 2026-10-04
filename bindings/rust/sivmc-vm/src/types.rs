@@ -125,8 +125,8 @@ mod tests {
             ffi::sivmc_revision::SIVMC_FRONTIER
         );
         assert_eq!(
-            Revision::SIVMC_ISTANBUL,
-            ffi::sivmc_revision::SIVMC_ISTANBUL
+            Revision::SIVMC_SILA_ISTANBUL,
+            ffi::sivmc_revision::SIVMC_SILA_ISTANBUL
         );
     }
 }

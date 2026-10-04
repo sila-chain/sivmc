@@ -220,34 +220,34 @@ static inline const char* sivmc_revision_to_string(enum sivmc_revision rev)
     {
     case SIVMC_FRONTIER:
         return "Frontier";
-    case SIVMC_HOMESTEAD:
-        return "Homestead";
-    case SIVMC_TANGERINE_WHISTLE:
-        return "TangerineWhistle";
-    case SIVMC_SPURIOUS_DRAGON:
-        return "SpuriousDragon";
-    case SIVMC_BYZANTIUM:
-        return "Byzantium";
-    case SIVMC_PETERSBURG:
-        return "Petersburg";
-    case SIVMC_ISTANBUL:
-        return "Istanbul";
-    case SIVMC_BERLIN:
-        return "Berlin";
-    case SIVMC_LONDON:
-        return "London";
-    case SIVMC_PARIS:
-        return "Paris";
-    case SIVMC_SHANGHAI:
-        return "Shanghai";
-    case SIVMC_CANCUN:
-        return "Cancun";
-    case SIVMC_PRAGUE:
-        return "Prague";
-    case SIVMC_OSAKA:
-        return "Osaka";
-    case SIVMC_AMSTERDAM:
-        return "Amsterdam";
+    case SIVMC_SILA_HOMESTEAD:
+        return "SilaHomestead";
+    case SIVMC_SIP150:
+        return "SIP150";
+    case SIVMC_SIP158:
+        return "SIP158";
+    case SIVMC_SILA_BYZANTIUM:
+        return "SilaByzantium";
+    case SIVMC_SILA_CONSTANTINOPLE_FIX:
+        return "SilaConstantinopleFix";
+    case SIVMC_SILA_ISTANBUL:
+        return "SilaIstanbul";
+    case SIVMC_SILA_BERLIN:
+        return "SilaBerlin";
+    case SIVMC_SILA_LONDON:
+        return "SilaLondon";
+    case SIVMC_SILA_PARIS:
+        return "SilaParis";
+    case SIVMC_SILA_SHANGHAI:
+        return "SilaShanghai";
+    case SIVMC_SILA_CANCUN:
+        return "SilaCancun";
+    case SIVMC_SILA_PRAGUE:
+        return "SilaPrague";
+    case SIVMC_SILA_OSAKA:
+        return "SilaOsaka";
+    case SIVMC_SILA_AMSTERDAM:
+        return "SilaAmsterdam";
     case SIVMC_EXPERIMENTAL:
         return "Experimental";
     }
