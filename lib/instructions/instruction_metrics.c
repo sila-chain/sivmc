@@ -1846,7 +1846,7 @@ static struct evmc_instruction_metrics istanbul_metrics[256] = {
     /*   SELFDESTRUCT = 0xff */ {5000, 1, -1},
 };
 
-static struct evmc_instruction_metrics constantinople_metrics[256] = {
+static struct evmc_instruction_metrics petersburg_metrics[256] = {
     /*           STOP = 0x00 */ {ZERO, 0, 0},
     /*            ADD = 0x01 */ {VERYLOW, 2, -1},
     /*            MUL = 0x02 */ {LOW, 2, -1},
@@ -3147,6 +3147,7 @@ const struct evmc_instruction_metrics* evmc_get_instruction_metrics_table(
     switch (revision)
     {
     case EVMC_EXPERIMENTAL:
+    case EVMC_AMSTERDAM:
     case EVMC_OSAKA:
         return osaka_metrics;
     case EVMC_PRAGUE:
@@ -3163,8 +3164,7 @@ const struct evmc_instruction_metrics* evmc_get_instruction_metrics_table(
     case EVMC_ISTANBUL:
         return istanbul_metrics;
     case EVMC_PETERSBURG:
-    case EVMC_CONSTANTINOPLE:
-        return constantinople_metrics;
+        return petersburg_metrics;
     case EVMC_BYZANTIUM:
         return byzantium_metrics;
     case EVMC_SPURIOUS_DRAGON:

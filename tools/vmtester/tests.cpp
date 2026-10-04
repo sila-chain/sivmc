@@ -44,14 +44,6 @@ TEST_F(evmc_vm_test, version)
     EXPECT_STREQ(owned_vm.version(), vm->version);
 }
 
-TEST_F(evmc_vm_test, capabilities)
-{
-    // The VM should have at least one of EVM1 or EWASM capabilities.
-    EXPECT_TRUE(evmc_vm_has_capability(vm, EVMC_CAPABILITY_EVM1) ||
-                evmc_vm_has_capability(vm, EVMC_CAPABILITY_EWASM) ||
-                evmc_vm_has_capability(vm, EVMC_CAPABILITY_PRECOMPILES));
-}
-
 TEST_F(evmc_vm_test, execute_call)
 {
     evmc::MockedHost mockedHost;
@@ -78,8 +70,6 @@ TEST_F(evmc_vm_test, execute_call)
         read_buffer(result.output_data, result.output_size);
     }
 
-    EXPECT_TRUE(evmc::is_zero(result.create_address));
-
     if (result.release != nullptr)
         result.release(&result);
 }
@@ -91,12 +81,12 @@ TEST_F(evmc_vm_test, execute_create)
                            0,
                            0,
                            65536,
+                           0,
                            evmc_address{},
                            evmc_address{},
                            nullptr,
                            0,
                            evmc_uint256be{},
-                           evmc_bytes32{},
                            evmc_address{},
                            nullptr,
                            0};
@@ -123,8 +113,6 @@ TEST_F(evmc_vm_test, execute_create)
     }
 
     // The VM will never provide the create address.
-    EXPECT_TRUE(evmc::is_zero(result.create_address));
-
     if (result.release != nullptr)
         result.release(&result);
 }
@@ -163,62 +151,5 @@ TEST_F(evmc_vm_test, set_option_unknown_value)
         // For null the behavior should be the same.
         auto r3 = evmc_set_option(vm, "verbose", nullptr);
         EXPECT_EQ(r3, EVMC_SET_OPTION_INVALID_VALUE);
-    }
-}
-
-TEST_F(evmc_vm_test, precompile_test)
-{
-    // This logic is based on and should match the description in EIP-2003.
-
-    if (!evmc_vm_has_capability(vm, EVMC_CAPABILITY_PRECOMPILES))
-        return;
-
-    // Iterate every address (as per EIP-1352)
-    for (size_t i = 0; i < 0xffff; i++)
-    {
-        auto addr = evmc_address{};
-        addr.bytes[18] = static_cast<uint8_t>(i >> 8);
-        addr.bytes[19] = static_cast<uint8_t>(i & 0xff);
-
-        const evmc_message msg{EVMC_CALL,
-                               0,
-                               0,
-                               65536,
-                               evmc_address{},
-                               evmc_address{},
-                               nullptr,
-                               0,
-                               evmc_uint256be{},
-                               evmc_bytes32{},
-                               addr,
-                               nullptr,
-                               0};
-
-        const evmc_result result =
-            vm->execute(vm, nullptr, nullptr, EVMC_MAX_REVISION, &msg, nullptr, 0);
-
-        // Validate some constraints
-
-        // Precompiles can only return a limited subset of codes.
-        EXPECT_TRUE(result.status_code == EVMC_SUCCESS || result.status_code == EVMC_OUT_OF_GAS ||
-                    result.status_code == EVMC_FAILURE || result.status_code == EVMC_REVERT ||
-                    result.status_code == EVMC_REJECTED);
-
-        if (result.status_code != EVMC_SUCCESS && result.status_code != EVMC_REVERT)
-        {
-            EXPECT_EQ(result.gas_left, 0);
-        }
-
-        if (result.output_data == nullptr)
-        {
-            EXPECT_EQ(result.output_size, size_t{0});
-        }
-        else if (result.output_size != 0)
-        {
-            read_buffer(result.output_data, result.output_size);
-        }
-
-        if (result.release != nullptr)
-            result.release(&result);
     }
 }

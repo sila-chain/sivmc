@@ -40,12 +40,6 @@ void destroy(evmc_vm* instance)
     delete static_cast<ExampleVM*>(instance);
 }
 
-/// The example implementation of the evmc_vm::get_capabilities() method.
-evmc_capabilities_flagset get_capabilities(evmc_vm* /*instance*/)
-{
-    return EVMC_CAPABILITY_EVM1;
-}
-
 /// Example VM options.
 ///
 /// The implementation of the evmc_vm::set_option() method.
@@ -384,8 +378,7 @@ evmc_result execute(evmc_vm* instance,
 /// @endcond
 
 ExampleVM::ExampleVM()
-  : evmc_vm{EVMC_ABI_VERSION, "example_vm",       PROJECT_VERSION, ::destroy,
-            ::execute,        ::get_capabilities, ::set_option}
+  : evmc_vm{EVMC_ABI_VERSION, "example_vm", PROJECT_VERSION, ::destroy, ::execute, ::set_option}
 {}
 }  // namespace
 

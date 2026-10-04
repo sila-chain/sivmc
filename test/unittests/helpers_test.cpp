@@ -20,11 +20,6 @@ static_assert(sizeof(evmc_call_kind) == sizeof(int),
               "Enum `evmc_call_kind` is not the size of int");
 static_assert(sizeof(evmc_revision) == sizeof(int), "Enum `evmc_revision` is not the size of int");
 
-static constexpr size_t optionalDataSize =
-    sizeof(evmc_result) - offsetof(evmc_result, create_address);
-static_assert(optionalDataSize >= sizeof(evmc_result_optional_storage),
-              "evmc_result's optional data space is too small");
-
 TEST(helpers, release_result)
 {
     auto r1 = evmc_result{};

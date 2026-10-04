@@ -17,6 +17,7 @@ const struct evmc_host_interface evmc_go_host = {
     (evmc_get_storage_fn)getStorage,
     (evmc_set_storage_fn)setStorage,
     (evmc_get_balance_fn)getBalance,
+    (evmc_get_nonce_fn)getNonce,
     (evmc_get_code_size_fn)getCodeSize,
     (evmc_get_code_hash_fn)getCodeHash,
     (evmc_copy_code_fn)copyCode,
@@ -41,6 +42,8 @@ static inline void go_exported_functions_type_checks()
     uint8_t* data = NULL;
     size_t size = 0;
     int64_t number = 0;
+    uint64_t nonce = 0;
+    (void)nonce;
     struct evmc_message* message = NULL;
 
     evmc_uint256be uint256be;
@@ -71,6 +74,10 @@ static inline void go_exported_functions_type_checks()
     evmc_get_balance_fn get_balance_fn = NULL;
     uint256be = get_balance_fn(context, address);
     uint256be = getBalance(context, address);
+
+    evmc_get_nonce_fn get_nonce_fn = NULL;
+    nonce = get_nonce_fn(context, address);
+    nonce = getNonce(context, address);
 
     evmc_get_code_size_fn get_code_size_fn = NULL;
     size = get_code_size_fn(context, address);

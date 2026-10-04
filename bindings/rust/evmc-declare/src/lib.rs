@@ -8,12 +8,11 @@
 //! evmc-declare can be used by applying its attribute to any struct which implements the `EvmcVm`
 //! trait, from the evmc-vm crate.
 //!
-//! The macro takes three arguments: a valid UTF-8 stylized VM name, a comma-separated list of
-//! capabilities, and a version string.
+//! The macro takes two arguments: a valid UTF-8 stylized VM name and a version string.
 //!
 //! # Example
 //! ```
-//! #[evmc_declare::evmc_declare_vm("This is an example VM name", "ewasm, evm", "1.2.3-custom")]
+//! #[evmc_declare::evmc_declare_vm("This is an example VM name", "1.2.3-custom")]
 //! pub struct ExampleVM;
 //!
 //! impl evmc_vm::EvmcVm for ExampleVM {
@@ -42,7 +41,6 @@ use syn::AttributeArgs;
 use syn::Ident;
 use syn::ItemStruct;
 use syn::Lit;
-use syn::LitInt;
 use syn::LitStr;
 use syn::NestedMeta;
 
@@ -53,7 +51,6 @@ struct VMNameSet {
 }
 
 struct VMMetaData {
-    capabilities: u32,
     // Not included in VMNameSet because it is parsed from the meta-item arguments.
     name_stylized: String,
     custom_version: String,
@@ -117,11 +114,10 @@ impl VMNameSet {
 
 impl VMMetaData {
     fn new(args: AttributeArgs) -> Self {
-        assert_eq!(args.len(), 3, "Incorrect number of arguments supplied");
+        assert_eq!(args.len(), 2, "Incorrect number of arguments supplied");
 
         let vm_name_meta = &args[0];
-        let vm_capabilities_meta = &args[1];
-        let vm_version_meta = &args[2];
+        let vm_version_meta = &args[1];
 
         let vm_name_string = match vm_name_meta {
             NestedMeta::Lit(lit) => {
@@ -138,36 +134,6 @@ impl VMMetaData {
             _ => panic!("Argument 1 must be a string literal"),
         };
 
-        let vm_capabilities_string = match vm_capabilities_meta {
-            NestedMeta::Lit(lit) => {
-                if let Lit::Str(s) = lit {
-                    s.value()
-                } else {
-                    panic!("Literal argument type mismatch")
-                }
-            }
-            _ => panic!("Argument 2 must be a string literal"),
-        };
-
-        // Parse the individual capabilities out of the list and prepare a capabilities flagset.
-        // Prune spaces and underscores here to make a clean comma-separated list.
-        let capabilities_list_pruned: String = vm_capabilities_string
-            .chars()
-            .filter(|c| *c != '_' && *c != ' ')
-            .collect();
-        let capabilities_flags = {
-            let mut ret: u32 = 0;
-            for capability in capabilities_list_pruned.split(',') {
-                match capability {
-                    "evm" => ret |= 1,
-                    "ewasm" => ret |= 1 << 1,
-                    "precompiles" => ret |= 1 << 2,
-                    _ => panic!("Invalid capability specified."),
-                }
-            }
-            ret
-        };
-
         let vm_version_string: String = if let NestedMeta::Lit(lit) = vm_version_meta {
             match lit {
                 // Add a null terminator here to ensure that it is handled correctly when
@@ -180,7 +146,7 @@ impl VMMetaData {
                 _ => panic!("Literal argument type mismatch"),
             }
         } else {
-            panic!("Argument 3 must be a string literal")
+            panic!("Argument 2 must be a string literal")
         };
 
         // Make sure that the only null byte is the terminator we inserted in each string.
@@ -188,14 +154,9 @@ impl VMMetaData {
         assert_eq!(vm_version_string.matches('\0').count(), 1);
 
         VMMetaData {
-            capabilities: capabilities_flags,
             name_stylized: vm_name_string,
             custom_version: vm_version_string,
         }
-    }
-
-    fn get_capabilities(&self) -> u32 {
-        self.capabilities
     }
 
     fn get_name_stylized_nulterm(&self) -> &String {
@@ -225,7 +186,6 @@ pub fn evmc_declare_vm(args: TokenStream, item: TokenStream) -> TokenStream {
 
     // Get all the tokens from the respective helpers.
     let static_data_tokens = build_static_data(&names, &vm_data);
-    let capabilities_tokens = build_capabilities_fn(vm_data.get_capabilities());
     let set_option_tokens = build_set_option_fn(&names);
     let create_tokens = build_create_fn(&names);
     let destroy_tokens = build_destroy_fn(&names);
@@ -234,7 +194,6 @@ pub fn evmc_declare_vm(args: TokenStream, item: TokenStream) -> TokenStream {
     let quoted = quote! {
         #input
         #static_data_tokens
-        #capabilities_tokens
         #set_option_tokens
         #create_tokens
         #destroy_tokens
@@ -263,18 +222,6 @@ fn build_static_data(names: &VMNameSet, metadata: &VMMetaData) -> proc_macro2::T
     quote! {
         static #static_name_ident: &'static str = #stylized_name_literal;
         static #static_version_ident: &'static str = #version_literal;
-    }
-}
-
-/// Takes a capabilities flag and builds the evmc_get_capabilities callback.
-fn build_capabilities_fn(capabilities: u32) -> proc_macro2::TokenStream {
-    let capabilities_string = capabilities.to_string();
-    let capabilities_literal = LitInt::new(&capabilities_string, capabilities.span());
-
-    quote! {
-        extern "C" fn __evmc_get_capabilities(instance: *mut ::evmc_vm::ffi::evmc_vm) -> ::evmc_vm::ffi::evmc_capabilities_flagset {
-            #capabilities_literal
-        }
     }
 }
 
@@ -351,7 +298,6 @@ fn build_create_fn(names: &VMNameSet) -> proc_macro2::TokenStream {
                 abi_version: ::evmc_vm::ffi::EVMC_ABI_VERSION as i32,
                 destroy: Some(__evmc_destroy),
                 execute: Some(__evmc_execute),
-                get_capabilities: Some(__evmc_get_capabilities),
                 set_option: Some(__evmc_set_option),
                 name: unsafe { ::std::ffi::CStr::from_bytes_with_nul_unchecked(#static_name_ident.as_bytes()).as_ptr() },
                 version: unsafe { ::std::ffi::CStr::from_bytes_with_nul_unchecked(#static_version_ident.as_bytes()).as_ptr() },
@@ -402,7 +348,6 @@ fn build_execute_fn(names: &VMNameSet) -> proc_macro2::TokenStream {
         {
             use evmc_vm::EvmcVm;
 
-            // TODO: context is optional in case of the "precompiles" capability
             if instance.is_null() || msg.is_null() || (code.is_null() && code_size != 0) {
                 // These are irrecoverable errors that violate the EVMC spec.
                 std::process::abort();

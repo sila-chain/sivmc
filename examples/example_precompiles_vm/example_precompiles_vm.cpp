@@ -100,12 +100,7 @@ evmc_result execute(evmc_vm* /*vm*/,
 evmc_vm* evmc_create_example_precompiles_vm()
 {
     static struct evmc_vm vm = {
-        EVMC_ABI_VERSION,
-        "example_precompiles_vm",
-        PROJECT_VERSION,
-        [](evmc_vm*) {},
-        execute,
-        [](evmc_vm*) { return evmc_capabilities_flagset{EVMC_CAPABILITY_PRECOMPILES}; },
+        EVMC_ABI_VERSION, "example_precompiles_vm", PROJECT_VERSION, [](evmc_vm*) {}, execute,
         nullptr,
     };
     return &vm;

@@ -24,6 +24,9 @@ pub type AccessStatus = ffi::evmc_access_status;
 /// EVMC storage status.
 pub type StorageStatus = ffi::evmc_storage_status;
 
+/// EVMC state-gas counters (EIP-8037).
+pub type StateGas = ffi::evmc_state_gas;
+
 /// EVMC VM revision.
 pub type Revision = ffi::evmc_revision;
 
@@ -66,10 +69,6 @@ mod tests {
         );
         assert_eq!(MessageKind::EVMC_CREATE, ffi::evmc_call_kind::EVMC_CREATE);
         assert_eq!(MessageKind::EVMC_CREATE2, ffi::evmc_call_kind::EVMC_CREATE2);
-        assert_eq!(
-            MessageKind::EVMC_EOFCREATE,
-            ffi::evmc_call_kind::EVMC_EOFCREATE
-        );
     }
 
     #[test]

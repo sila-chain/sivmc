@@ -22,6 +22,7 @@ struct account
     virtual ~account() = default;
 
     evmc::uint256be balance = {};
+    uint64_t nonce = 0;
     std::vector<uint8_t> code;
     std::map<evmc::bytes32, evmc::bytes32> storage;
     std::map<evmc::bytes32, evmc::bytes32> transient_storage;
@@ -87,6 +88,14 @@ public:
         if (it != accounts.end())
             return it->second.balance;
         return {};
+    }
+
+    uint64_t get_nonce(const evmc::address& addr) const noexcept final
+    {
+        auto it = accounts.find(addr);
+        if (it != accounts.end())
+            return it->second.nonce;
+        return 0;
     }
 
     size_t get_code_size(const evmc::address& addr) const noexcept final

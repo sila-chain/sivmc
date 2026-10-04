@@ -10,6 +10,8 @@ use std::path::PathBuf;
 fn gen_bindings() {
     let bindings = bindgen::Builder::default()
         .header("evmc.h")
+        // C23 gives evmc_access_status the same bool underlying type as in C++
+        .clang_arg("-std=c2x")
         .generate_comments(true)
         // do not generate an empty enum for EVMC_ABI_VERSION
         .constified_enum("")

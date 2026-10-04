@@ -40,6 +40,8 @@ public:
 
     evmc::uint256be get_balance(const evmc::address& /*addr*/) const noexcept final { return {}; }
 
+    uint64_t get_nonce(const evmc::address& /*addr*/) const noexcept final { return 0; }
+
     size_t get_code_size(const evmc::address& /*addr*/) const noexcept final { return 0; }
 
     evmc::bytes32 get_code_hash(const evmc::address& /*addr*/) const noexcept final { return {}; }
@@ -456,16 +458,15 @@ TEST(cpp, bytes32_to_bytes_view)
 TEST(cpp, result)
 {
     static const uint8_t output = 0;
-    int release_called = 0;
+    static int release_called = 0;
     {
         auto raw_result = evmc_result{};
-        evmc_get_optional_storage(&raw_result)->pointer = &release_called;
         EXPECT_EQ(release_called, 0);
 
         raw_result.output_data = &output;
         raw_result.release = [](const evmc_result* r) {
             EXPECT_EQ(r->output_data, &output);
-            ++*static_cast<int*>(evmc_get_const_optional_storage(r)->pointer);
+            ++release_called;
         };
         EXPECT_EQ(release_called, 0);
 
@@ -500,21 +501,9 @@ TEST(cpp, vm)
     EXPECT_EQ(res.gas_left, 1);
 }
 
-TEST(cpp, vm_capabilities)
-{
-    const auto vm = evmc::VM{evmc_create_example_vm()};
-
-    EXPECT_TRUE(vm.get_capabilities() & EVMC_CAPABILITY_EVM1);
-    EXPECT_FALSE(vm.get_capabilities() & EVMC_CAPABILITY_EWASM);
-    EXPECT_FALSE(vm.get_capabilities() & EVMC_CAPABILITY_PRECOMPILES);
-    EXPECT_TRUE(vm.has_capability(EVMC_CAPABILITY_EVM1));
-    EXPECT_FALSE(vm.has_capability(EVMC_CAPABILITY_EWASM));
-    EXPECT_FALSE(vm.has_capability(EVMC_CAPABILITY_PRECOMPILES));
-}
-
 TEST(cpp, vm_set_option)
 {
-    evmc_vm raw = {EVMC_ABI_VERSION, "", "", nullptr, nullptr, nullptr, nullptr};
+    evmc_vm raw = {EVMC_ABI_VERSION, "", "", nullptr, nullptr, nullptr};
     raw.destroy = [](evmc_vm*) {};
 
     auto vm = evmc::VM{&raw};
@@ -532,7 +521,7 @@ TEST(cpp, vm_set_option_in_constructor)
         return EVMC_SET_OPTION_INVALID_NAME;
     };
 
-    evmc_vm raw{EVMC_ABI_VERSION, "", "", nullptr, nullptr, nullptr, set_option_method};
+    evmc_vm raw{EVMC_ABI_VERSION, "", "", nullptr, nullptr, set_option_method};
     raw.destroy = [](evmc_vm*) {};
 
     const auto vm = evmc::VM{&raw, {{"o", "1"}, {"o", "2"}}};
@@ -550,8 +539,8 @@ TEST(cpp, vm_null)
 TEST(cpp, vm_move)
 {
     static int destroy_counter = 0;
-    const auto template_vm = evmc_vm{
-        EVMC_ABI_VERSION, "", "", [](evmc_vm*) { ++destroy_counter; }, nullptr, nullptr, nullptr};
+    const auto template_vm =
+        evmc_vm{EVMC_ABI_VERSION, "", "", [](evmc_vm*) { ++destroy_counter; }, nullptr, nullptr};
 
     EXPECT_EQ(destroy_counter, 0);
     {
@@ -606,8 +595,6 @@ TEST(cpp, vm_move)
 TEST(cpp, vm_execute_precompiles)
 {
     auto vm = evmc::VM{evmc_create_example_precompiles_vm()};
-    EXPECT_EQ(vm.get_capabilities(), evmc_capabilities_flagset{EVMC_CAPABILITY_PRECOMPILES});
-
     constexpr std::array<uint8_t, 3> input{{1, 2, 3}};
 
     evmc_message msg{};
@@ -616,7 +603,7 @@ TEST(cpp, vm_execute_precompiles)
     msg.input_size = input.size();
     msg.gas = 18;
 
-    auto res = vm.execute(EVMC_MAX_REVISION, msg, nullptr, 0);
+    auto res = vm.execute(evmc_host_interface{}, nullptr, EVMC_MAX_REVISION, msg, nullptr, 0);
     EXPECT_EQ(res.status_code, EVMC_SUCCESS);
     EXPECT_EQ(res.gas_left, 0);
     ASSERT_EQ(res.output_size, input.size());
@@ -829,7 +816,6 @@ TEST(cpp, result_create)
     EXPECT_EQ(c.status_code, r.status_code);
     EXPECT_EQ(c.gas_left, r.gas_left);
     ASSERT_EQ(c.output_size, r.output_size);
-    EXPECT_EQ(evmc::address{c.create_address}, evmc::address{r.create_address});
     ASSERT_TRUE(c.release);
     EXPECT_TRUE(std::memcmp(c.output_data, r.output_data, c.output_size) == 0);
     c.release(&c);
@@ -897,31 +883,24 @@ TEST(cpp, revision_to_string)
         std::string_view str;
     };
 
-// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
-#define TEST_CASE(NAME) \
-    TestCase            \
-    {                   \
-        NAME, #NAME     \
-    }
     constexpr TestCase test_cases[]{
-        TEST_CASE(EVMC_FRONTIER),
-        TEST_CASE(EVMC_HOMESTEAD),
-        TEST_CASE(EVMC_TANGERINE_WHISTLE),
-        TEST_CASE(EVMC_SPURIOUS_DRAGON),
-        TEST_CASE(EVMC_BYZANTIUM),
-        TEST_CASE(EVMC_CONSTANTINOPLE),
-        TEST_CASE(EVMC_PETERSBURG),
-        TEST_CASE(EVMC_ISTANBUL),
-        TEST_CASE(EVMC_BERLIN),
-        TEST_CASE(EVMC_LONDON),
-        TEST_CASE(EVMC_PARIS),
-        TEST_CASE(EVMC_SHANGHAI),
-        TEST_CASE(EVMC_CANCUN),
-        TEST_CASE(EVMC_PRAGUE),
-        TEST_CASE(EVMC_OSAKA),
-        TEST_CASE(EVMC_EXPERIMENTAL),
+        {EVMC_FRONTIER, "Frontier"},
+        {EVMC_HOMESTEAD, "Homestead"},
+        {EVMC_TANGERINE_WHISTLE, "TangerineWhistle"},
+        {EVMC_SPURIOUS_DRAGON, "SpuriousDragon"},
+        {EVMC_BYZANTIUM, "Byzantium"},
+        {EVMC_PETERSBURG, "Petersburg"},
+        {EVMC_ISTANBUL, "Istanbul"},
+        {EVMC_BERLIN, "Berlin"},
+        {EVMC_LONDON, "London"},
+        {EVMC_PARIS, "Paris"},
+        {EVMC_SHANGHAI, "Shanghai"},
+        {EVMC_CANCUN, "Cancun"},
+        {EVMC_PRAGUE, "Prague"},
+        {EVMC_OSAKA, "Osaka"},
+        {EVMC_AMSTERDAM, "Amsterdam"},
+        {EVMC_EXPERIMENTAL, "Experimental"},
     };
-#undef TEST_CASE
 
     std::ostringstream os;
     ASSERT_EQ(std::size(test_cases), size_t{EVMC_MAX_REVISION + 1});
@@ -929,25 +908,9 @@ TEST(cpp, revision_to_string)
     {
         const auto& t = test_cases[i];
         EXPECT_EQ(t.rev, static_cast<int>(i));
-        std::string expected;
-        std::transform(std::cbegin(t.str) + std::strlen("EVMC_"), std::cend(t.str),
-                       std::back_inserter(expected), [skip = true](char c) mutable -> char {
-                           if (skip)
-                           {
-                               skip = false;
-                               return c;
-                           }
-                           else if (c == '_')
-                           {
-                               skip = true;
-                               return ' ';
-                           }
-                           else
-                               return static_cast<char>(std::tolower(c));
-                       });
-        EXPECT_EQ(evmc::to_string(t.rev), expected);
+        EXPECT_EQ(evmc::to_string(t.rev), t.str);
         os << t.rev;
-        EXPECT_EQ(os.str(), expected);
+        EXPECT_EQ(os.str(), t.str);
         os.str({});
     }
 }

@@ -24,7 +24,6 @@ const (
 	CallCode     CallKind = C.EVMC_CALLCODE
 	Create       CallKind = C.EVMC_CREATE
 	Create2      CallKind = C.EVMC_CREATE2
-	EofCreate    CallKind = C.EVMC_EOFCREATE
 )
 
 type AccessStatus int
@@ -83,6 +82,7 @@ type TxContext struct {
 	ChainID     Hash
 	BaseFee     Hash
 	BlobBaseFee Hash
+	SlotNumber  uint64
 }
 
 type HostContext interface {
@@ -90,6 +90,7 @@ type HostContext interface {
 	GetStorage(addr Address, key Hash) Hash
 	SetStorage(addr Address, key Hash, value Hash) StorageStatus
 	GetBalance(addr Address) Hash
+	GetNonce(addr Address) uint64
 	GetCodeSize(addr Address) int
 	GetCodeHash(addr Address) Hash
 	GetCode(addr Address) []byte
@@ -98,9 +99,9 @@ type HostContext interface {
 	GetBlockHash(number int64) Hash
 	EmitLog(addr Address, topics []Hash, data []byte)
 	Call(kind CallKind,
-		recipient Address, sender Address, value Hash, input []byte, gas int64, depth int,
-		static bool, salt Hash, codeAddress Address) (output []byte, gasLeft int64, gasRefund int64,
-		createAddr Address, err error)
+		recipient Address, sender Address, value Hash, input []byte, gas int64, stateGas int64,
+		depth int, static bool, codeAddress Address) (output []byte, gasLeft int64, gasRefund int64,
+		resultStateGas StateGas, err error)
 	AccessAccount(addr Address) AccessStatus
 	AccessStorage(addr Address, key Hash) AccessStatus
 	GetTransientStorage(addr Address, key Hash) Hash
@@ -129,6 +130,12 @@ func setStorage(pCtx unsafe.Pointer, pAddr *C.evmc_address, pKey *C.evmc_bytes32
 func getBalance(pCtx unsafe.Pointer, pAddr *C.evmc_address) C.evmc_uint256be {
 	ctx := getHostContext(uintptr(pCtx))
 	return evmcBytes32(ctx.GetBalance(goAddress(*pAddr)))
+}
+
+//export getNonce
+func getNonce(pCtx unsafe.Pointer, pAddr *C.evmc_address) C.uint64_t {
+	ctx := getHostContext(uintptr(pCtx))
+	return C.uint64_t(ctx.GetNonce(goAddress(*pAddr)))
 }
 
 //export getCodeSize
@@ -188,8 +195,7 @@ func getTxContext(pCtx unsafe.Pointer) C.struct_evmc_tx_context {
 		evmcBytes32(txContext.BlobBaseFee),
 		nil, // TODO: Add support for blob hashes.
 		0,
-		nil, // TODO: Add support for transaction initcodes.
-		0,
+		C.uint64_t(txContext.SlotNumber),
 	}
 }
 
@@ -221,8 +227,8 @@ func call(pCtx unsafe.Pointer, msg *C.struct_evmc_message) C.struct_evmc_result 
 	ctx := getHostContext(uintptr(pCtx))
 
 	kind := CallKind(msg.kind)
-	output, gasLeft, gasRefund, createAddr, err := ctx.Call(kind, goAddress(msg.recipient), goAddress(msg.sender), goHash(msg.value),
-		goByteSlice(msg.input_data, msg.input_size), int64(msg.gas), int(msg.depth), msg.flags != 0, goHash(msg.create2_salt),
+	output, gasLeft, gasRefund, stateGas, err := ctx.Call(kind, goAddress(msg.recipient), goAddress(msg.sender), goHash(msg.value),
+		goByteSlice(msg.input_data, msg.input_size), int64(msg.gas), int64(msg.state_gas), int(msg.depth), msg.flags != 0,
 		goAddress(msg.code_address))
 
 	statusCode := C.enum_evmc_status_code(0)
@@ -236,7 +242,8 @@ func call(pCtx unsafe.Pointer, msg *C.struct_evmc_message) C.struct_evmc_result 
 	}
 
 	result := C.evmc_make_result(statusCode, C.int64_t(gasLeft), C.int64_t(gasRefund), outputData, C.size_t(len(output)))
-	result.create_address = evmcAddress(createAddr)
+	result.state_gas.left = C.int64_t(stateGas.Left)
+	result.state_gas.spilled = C.int64_t(stateGas.Spilled)
 	return result
 }
 

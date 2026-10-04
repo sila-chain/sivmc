@@ -32,6 +32,15 @@
 extern "C" {
 #endif
 
+/**
+ * Zero default member initializer, applied in C++ only (C has no default member initializers).
+ */
+#ifdef __cplusplus
+#define EVMC_ZERO_INIT = 0
+#else
+#define EVMC_ZERO_INIT
+#endif
+
 /* BEGIN Python CFFI declarations */
 
 enum
@@ -401,10 +410,10 @@ typedef void (*evmc_release_result_fn)(const struct evmc_result* result);
 struct evmc_state_gas
 {
     /** The amount of state gas left. */
-    int64_t left = 0;
+    int64_t left EVMC_ZERO_INIT;
 
     /** The portion of the consumed state gas taken from evmc_result::gas_left. */
-    int64_t spilled = 0;
+    int64_t spilled EVMC_ZERO_INIT;
 };
 
 /** The EVM code execution result. */
@@ -774,7 +783,10 @@ typedef void (*evmc_emit_log_fn)(struct evmc_host_context* context,
 /**
  * Access status per EIP-2929: Gas cost increases for state access opcodes.
  */
-enum evmc_access_status : bool
+enum evmc_access_status
+#if defined(__cplusplus) || (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L)
+    : bool
+#endif
 {
     /**
      * The entry hasn't been accessed before – it's the first access.

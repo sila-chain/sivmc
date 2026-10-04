@@ -181,11 +181,11 @@ TEST(instructions, byzantium_hard_fork)
     EXPECT_TRUE(sdn[OP_STATICCALL] == nullptr);
 }
 
-TEST(instructions, constantinople_hard_fork)
+TEST(instructions, petersburg_hard_fork)
 {
-    const auto c = evmc_get_instruction_metrics_table(EVMC_CONSTANTINOPLE);
+    const auto c = evmc_get_instruction_metrics_table(EVMC_PETERSBURG);
     const auto b = evmc_get_instruction_metrics_table(EVMC_BYZANTIUM);
-    const auto cn = evmc_get_instruction_names_table(EVMC_CONSTANTINOPLE);
+    const auto cn = evmc_get_instruction_names_table(EVMC_PETERSBURG);
     const auto bn = evmc_get_instruction_names_table(EVMC_BYZANTIUM);
 
     for (int op = 0x00; op <= 0xff; ++op)
@@ -226,20 +226,6 @@ TEST(instructions, constantinople_hard_fork)
     EXPECT_EQ(b[OP_EXTCODEHASH].gas_cost, 0);
     EXPECT_EQ(cn[OP_EXTCODEHASH], std::string{"EXTCODEHASH"});
     EXPECT_TRUE(bn[OP_EXTCODEHASH] == nullptr);
-}
-
-TEST(instructions, petersburg_hard_fork)
-{
-    const auto p = evmc_get_instruction_metrics_table(EVMC_PETERSBURG);
-    const auto c = evmc_get_instruction_metrics_table(EVMC_CONSTANTINOPLE);
-    const auto pn = evmc_get_instruction_names_table(EVMC_PETERSBURG);
-    const auto cn = evmc_get_instruction_names_table(EVMC_CONSTANTINOPLE);
-
-    for (int op = 0x00; op <= 0xff; ++op)
-    {
-        EXPECT_EQ(p[op], c[op]) << op;
-        EXPECT_STREQ(pn[op], cn[op]) << op;
-    }
 }
 
 TEST(instructions, istanbul_hard_fork)

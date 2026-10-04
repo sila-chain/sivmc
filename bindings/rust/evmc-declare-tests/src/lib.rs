@@ -10,7 +10,7 @@ use evmc_vm::ExecutionResult;
 use evmc_vm::SetOptionError;
 use std::collections::HashMap;
 
-#[evmc_declare_vm("Foo VM", "ewasm, evm", "1.42-alpha.gamma.starship")]
+#[evmc_declare_vm("Foo VM", "1.42-alpha.gamma.starship")]
 pub struct FooVM {
     options: HashMap<String, String>,
 }

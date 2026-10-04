@@ -33,10 +33,9 @@ The most important method is ::evmc_vm::execute() because it executes EVM code.
 Remember that the Host is allowed to invoke the execute method concurrently
 so do not store data related to a particular execution context in the VM instance.
 
-Before a client can actually execute a VM, it is important to implement the three
-basic fields for querying name (::evmc_vm::name), version (::evmc_vm::version)
-and capabilities (::evmc_vm::get_capabilities()) as well as the ::evmc_vm::destroy()
-method to wind the VM down.
+Before a client can actually execute a VM, it is important to implement the two
+basic fields for querying name (::evmc_vm::name) and version (::evmc_vm::version)
+as well as the ::evmc_vm::destroy() method to wind the VM down.
 
 Other methods are optional.
 

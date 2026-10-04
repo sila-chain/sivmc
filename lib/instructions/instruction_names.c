@@ -1817,7 +1817,7 @@ static const char* istanbul_names[256] = {
     /* 0xff */ "SELFDESTRUCT",
 };
 
-static const char* constantinople_names[256] = {
+static const char* petersburg_names[256] = {
     /* 0x00 */ "STOP",
     /* 0x01 */ "ADD",
     /* 0x02 */ "MUL",
@@ -2858,6 +2858,7 @@ const char* const* evmc_get_instruction_names_table(enum evmc_revision revision)
     switch (revision)
     {
     case EVMC_EXPERIMENTAL:
+    case EVMC_AMSTERDAM:
     case EVMC_OSAKA:
         return osaka_names;
     case EVMC_PRAGUE:
@@ -2874,8 +2875,7 @@ const char* const* evmc_get_instruction_names_table(enum evmc_revision revision)
     case EVMC_ISTANBUL:
         return istanbul_names;
     case EVMC_PETERSBURG:
-    case EVMC_CONSTANTINOPLE:
-        return constantinople_names;
+        return petersburg_names;
     case EVMC_BYZANTIUM:
         return byzantium_names;
     case EVMC_SPURIOUS_DRAGON:

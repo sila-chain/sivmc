@@ -27,7 +27,7 @@ extern const struct evmc_host_interface evmc_go_host;
 
 static struct evmc_result execute_wrapper(struct evmc_vm* vm,
 	uintptr_t context_index, enum evmc_revision rev,
-	enum evmc_call_kind kind, uint32_t flags, int32_t depth, int64_t gas,
+	enum evmc_call_kind kind, uint32_t flags, int32_t depth, int64_t gas, int64_t state_gas,
 	const evmc_address* recipient, const evmc_address* sender,
 	const uint8_t* input_data, size_t input_size, const evmc_uint256be* value,
 	const uint8_t* code, size_t code_size)
@@ -37,12 +37,12 @@ static struct evmc_result execute_wrapper(struct evmc_vm* vm,
 		flags,
 		depth,
 		gas,
+		state_gas,
 		*recipient,
 		*sender,
 		input_data,
 		input_size,
 		*value,
-		{{0}}, // create2_salt: not required for execution
 		{{0}}, // code_address: not required for execution
 		0,     // code
 		0,     // code_size
@@ -102,7 +102,6 @@ const (
 	TangerineWhistle     Revision = C.EVMC_TANGERINE_WHISTLE
 	SpuriousDragon       Revision = C.EVMC_SPURIOUS_DRAGON
 	Byzantium            Revision = C.EVMC_BYZANTIUM
-	Constantinople       Revision = C.EVMC_CONSTANTINOPLE
 	Petersburg           Revision = C.EVMC_PETERSBURG
 	Istanbul             Revision = C.EVMC_ISTANBUL
 	Berlin               Revision = C.EVMC_BERLIN
@@ -112,6 +111,7 @@ const (
 	Cancun               Revision = C.EVMC_CANCUN
 	Prague               Revision = C.EVMC_PRAGUE
 	Osaka                Revision = C.EVMC_OSAKA
+	Amsterdam            Revision = C.EVMC_AMSTERDAM
 	Experimental         Revision = C.EVMC_EXPERIMENTAL
 	MaxRevision          Revision = C.EVMC_MAX_REVISION
 	LatestStableRevision Revision = C.EVMC_LATEST_STABLE_REVISION
@@ -175,17 +175,6 @@ func (vm *VM) Version() string {
 	return C.GoString(vm.handle.version)
 }
 
-type Capability uint32
-
-const (
-	CapabilityEVM1  Capability = C.EVMC_CAPABILITY_EVM1
-	CapabilityEWASM Capability = C.EVMC_CAPABILITY_EWASM
-)
-
-func (vm *VM) HasCapability(capability Capability) bool {
-	return bool(C.evmc_vm_has_capability(vm.handle, uint32(capability)))
-}
-
 func (vm *VM) SetOption(name string, value string) (err error) {
 
 	r := C.set_option(vm.handle, C.CString(name), C.CString(value))
@@ -199,14 +188,21 @@ func (vm *VM) SetOption(name string, value string) (err error) {
 	return err
 }
 
+// StateGas contains the state-gas counters of an execution (EIP-8037).
+type StateGas struct {
+	Left    int64
+	Spilled int64
+}
+
 type Result struct {
 	Output    []byte
 	GasLeft   int64
 	GasRefund int64
+	StateGas  StateGas
 }
 
 func (vm *VM) Execute(ctx HostContext, rev Revision,
-	kind CallKind, static bool, delegated bool, depth int, gas int64,
+	kind CallKind, static bool, delegated bool, depth int, gas int64, stateGas int64,
 	recipient Address, sender Address, input []byte, value Hash,
 	code []byte) (res Result, err error) {
 
@@ -224,7 +220,7 @@ func (vm *VM) Execute(ctx HostContext, rev Revision,
 	evmcSender := evmcAddress(sender)
 	evmcValue := evmcBytes32(value)
 	result := C.execute_wrapper(vm.handle, C.uintptr_t(ctxId), uint32(rev),
-		C.enum_evmc_call_kind(kind), flags, C.int32_t(depth), C.int64_t(gas),
+		C.enum_evmc_call_kind(kind), flags, C.int32_t(depth), C.int64_t(gas), C.int64_t(stateGas),
 		&evmcRecipient, &evmcSender, bytesPtr(input), C.size_t(len(input)), &evmcValue,
 		bytesPtr(code), C.size_t(len(code)))
 	removeHostContext(ctxId)
@@ -232,6 +228,7 @@ func (vm *VM) Execute(ctx HostContext, rev Revision,
 	res.Output = C.GoBytes(unsafe.Pointer(result.output_data), C.int(result.output_size))
 	res.GasLeft = int64(result.gas_left)
 	res.GasRefund = int64(result.gas_refund)
+	res.StateGas = StateGas{int64(result.state_gas.left), int64(result.state_gas.spilled)}
 	if result.status_code != C.EVMC_SUCCESS {
 		err = Error(result.status_code)
 	}

@@ -76,7 +76,7 @@ TEST(tool_commands, run_copy_input_to_output)
             false, out);
     EXPECT_EQ(exit_code, 0);
     EXPECT_EQ(out.str(),
-              out_pattern("Tangerine Whistle", 200, "success", 7,
+              out_pattern("TangerineWhistle", 200, "success", 7,
                           "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f"));
 }
 
@@ -91,7 +91,7 @@ TEST(tool_commands, create_return_1)
         run(vm, EVMC_SPURIOUS_DRAGON, 200, *from_hex("6960016000526001601ff3600052600a6016f3"), {},
             true, false, out);
     EXPECT_EQ(exit_code, 0);
-    EXPECT_EQ(out.str(), out_pattern("Spurious Dragon", 200, "success", 6, "01", true));
+    EXPECT_EQ(out.str(), out_pattern("SpuriousDragon", 200, "success", 6, "01", true));
 }
 
 TEST(tool_commands, create_copy_input_to_output)
@@ -107,7 +107,7 @@ TEST(tool_commands, create_copy_input_to_output)
     EXPECT_EQ(exit_code, 0);
     EXPECT_EQ(
         out.str(),
-        out_pattern("Spurious Dragon", 200, "success", 7,
+        out_pattern("SpuriousDragon", 200, "success", 7,
                     "0c49c40000000000000000000000000000000000000000000000000000000000", true));
 }
 

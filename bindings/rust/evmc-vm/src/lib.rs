@@ -49,7 +49,7 @@ pub struct ExecutionResult {
     gas_left: i64,
     gas_refund: i64,
     output: Option<Vec<u8>>,
-    create_address: Option<Address>,
+    state_gas: StateGas,
 }
 
 /// EVMC execution message structure.
@@ -59,11 +59,11 @@ pub struct ExecutionMessage {
     flags: u32,
     depth: i32,
     gas: i64,
+    state_gas: i64,
     recipient: Address,
     sender: Address,
     input: Option<Vec<u8>>,
     value: Uint256,
-    create2_salt: Bytes32,
     code_address: Address,
     code: Option<Vec<u8>>,
 }
@@ -92,8 +92,17 @@ impl ExecutionResult {
             gas_left: _gas_left,
             gas_refund: _gas_refund,
             output: _output.map(|s| s.to_vec()),
-            create_address: None,
+            state_gas: StateGas {
+                left: 0,
+                spilled: 0,
+            },
         }
+    }
+
+    /// Set the state-gas counters (EIP-8037).
+    pub fn with_state_gas(mut self, state_gas: StateGas) -> Self {
+        self.state_gas = state_gas;
+        self
     }
 
     /// Create failure result.
@@ -131,10 +140,9 @@ impl ExecutionResult {
         self.output.as_ref()
     }
 
-    /// Read the address of the created account. This will likely be set when
-    /// returned from a CREATE/CREATE2.
-    pub fn create_address(&self) -> Option<&Address> {
-        self.create_address.as_ref()
+    /// Read the state-gas counters (EIP-8037).
+    pub fn state_gas(&self) -> &StateGas {
+        &self.state_gas
     }
 }
 
@@ -144,11 +152,11 @@ impl ExecutionMessage {
         flags: u32,
         depth: i32,
         gas: i64,
+        state_gas: i64,
         recipient: Address,
         sender: Address,
         input: Option<&[u8]>,
         value: Uint256,
-        create2_salt: Bytes32,
         code_address: Address,
         code: Option<&[u8]>,
     ) -> Self {
@@ -157,11 +165,11 @@ impl ExecutionMessage {
             flags,
             depth,
             gas,
+            state_gas,
             recipient,
             sender,
             input: input.map(|s| s.to_vec()),
             value,
-            create2_salt,
             code_address,
             code: code.map(|s| s.to_vec()),
         }
@@ -187,6 +195,11 @@ impl ExecutionMessage {
         self.gas
     }
 
+    /// Read the amount of state gas supplied with the message (EIP-8037).
+    pub fn state_gas(&self) -> i64 {
+        self.state_gas
+    }
+
     /// Read the recipient address of the message.
     pub fn recipient(&self) -> &Address {
         &self.recipient
@@ -205,11 +218,6 @@ impl ExecutionMessage {
     /// Read the value of the message.
     pub fn value(&self) -> &Uint256 {
         &self.value
-    }
-
-    /// Read the salt for CREATE2. Only valid if the message kind is CREATE2.
-    pub fn create2_salt(&self) -> &Bytes32 {
-        &self.create2_salt
     }
 
     /// Read the code address of the message.
@@ -288,6 +296,14 @@ impl<'a> ExecutionContext<'a> {
         }
     }
 
+    /// Get nonce of an account.
+    pub fn get_nonce(&self, address: &Address) -> u64 {
+        unsafe {
+            assert!((*self.host).get_nonce.is_some());
+            (*self.host).get_nonce.unwrap()(self.context, address as *const Address)
+        }
+    }
+
     /// Get code size of an account.
     pub fn get_code_size(&self, address: &Address) -> usize {
         unsafe {
@@ -360,12 +376,12 @@ impl<'a> ExecutionContext<'a> {
             flags: message.flags(),
             depth: message.depth(),
             gas: message.gas(),
+            state_gas: message.state_gas(),
             recipient: *message.recipient(),
             sender: *message.sender(),
             input_data,
             input_size,
             value: *message.value(),
-            create2_salt: *message.create2_salt(),
             code_address: *message.code_address(),
             code: code_data,
             code_size,
@@ -460,8 +476,7 @@ impl From<ffi::evmc_result> for ExecutionResult {
             } else {
                 Some(from_buf_raw::<u8>(result.output_data, result.output_size))
             },
-            // Consider it is always valid.
-            create_address: Some(result.create_address),
+            state_gas: result.state_gas,
         };
 
         // Release allocated ffi struct.
@@ -527,13 +542,8 @@ impl From<ExecutionResult> for ffi::evmc_result {
             gas_refund: value.gas_refund,
             output_data: buffer,
             output_size: len,
+            state_gas: value.state_gas,
             release: Some(release_stack_result),
-            create_address: if value.create_address.is_some() {
-                value.create_address.unwrap()
-            } else {
-                Address { bytes: [0u8; 20] }
-            },
-            padding: [0u8; 4],
         }
     }
 }
@@ -553,6 +563,7 @@ impl From<&ffi::evmc_message> for ExecutionMessage {
             flags: message.flags,
             depth: message.depth,
             gas: message.gas,
+            state_gas: message.state_gas,
             recipient: message.recipient,
             sender: message.sender,
             input: if message.input_data.is_null() {
@@ -564,7 +575,6 @@ impl From<&ffi::evmc_message> for ExecutionMessage {
                 Some(from_buf_raw::<u8>(message.input_data, message.input_size))
             },
             value: message.value,
-            create2_salt: message.create2_salt,
             code_address: message.code_address,
             code: if message.code.is_null() {
                 assert_eq!(message.code_size, 0);
@@ -602,7 +612,8 @@ mod tests {
         assert_eq!(r.gas_left(), 420);
         assert_eq!(r.gas_refund(), 21);
         assert!(r.output().is_none());
-        assert!(r.create_address().is_none());
+        assert_eq!(r.state_gas().left, 0);
+        assert_eq!(r.state_gas().spilled, 0);
     }
 
     // Test-specific helper to dispose of execution results in unit tests
@@ -625,11 +636,13 @@ mod tests {
             status_code: StatusCode::EVMC_SUCCESS,
             gas_left: 1337,
             gas_refund: 21,
+            state_gas: StateGas {
+                left: 7,
+                spilled: 3,
+            },
             output_data: Box::into_raw(Box::new([0xde, 0xad, 0xbe, 0xef])) as *const u8,
             output_size: 4,
             release: Some(test_result_dispose),
-            create_address: Address { bytes: [0u8; 20] },
-            padding: [0u8; 4],
         };
 
         let r: ExecutionResult = f.into();
@@ -639,7 +652,8 @@ mod tests {
         assert_eq!(r.gas_refund(), 21);
         assert!(r.output().is_some());
         assert_eq!(r.output().unwrap().len(), 4);
-        assert!(r.create_address().is_some());
+        assert_eq!(r.state_gas().left, 7);
+        assert_eq!(r.state_gas().spilled, 3);
     }
 
     #[test]
@@ -663,7 +677,7 @@ mod tests {
                 std::slice::from_raw_parts((*f).output_data, 5) as &[u8],
                 &[0xc0, 0xff, 0xee, 0x71, 0x75]
             );
-            assert_eq!((*f).create_address.bytes, [0u8; 20]);
+            assert_eq!((*f).state_gas.left, 0);
             if (*f).release.is_some() {
                 (*f).release.unwrap()(f);
             }
@@ -682,7 +696,7 @@ mod tests {
             assert_eq!((*f).gas_refund, 21);
             assert!((*f).output_data.is_null());
             assert_eq!((*f).output_size, 0);
-            assert_eq!((*f).create_address.bytes, [0u8; 20]);
+            assert_eq!((*f).state_gas.left, 0);
             if (*f).release.is_some() {
                 (*f).release.unwrap()(f);
             }
@@ -709,7 +723,7 @@ mod tests {
                 std::slice::from_raw_parts(f.output_data, 5) as &[u8],
                 &[0xc0, 0xff, 0xee, 0x71, 0x75]
             );
-            assert_eq!(f.create_address.bytes, [0u8; 20]);
+            assert_eq!(f.state_gas.left, 0);
             if f.release.is_some() {
                 f.release.unwrap()(&f);
             }
@@ -727,7 +741,7 @@ mod tests {
             assert_eq!(f.gas_refund, 21);
             assert!(f.output_data.is_null());
             assert_eq!(f.output_size, 0);
-            assert_eq!(f.create_address.bytes, [0u8; 20]);
+            assert_eq!(f.state_gas.left, 0);
             if f.release.is_some() {
                 f.release.unwrap()(&f);
             }
@@ -740,7 +754,6 @@ mod tests {
         let recipient = Address { bytes: [32u8; 20] };
         let sender = Address { bytes: [128u8; 20] };
         let value = Uint256 { bytes: [0u8; 32] };
-        let create2_salt = Bytes32 { bytes: [255u8; 32] };
         let code_address = Address { bytes: [64u8; 20] };
 
         let ret = ExecutionMessage::new(
@@ -748,11 +761,11 @@ mod tests {
             44,
             66,
             4466,
+            77,
             recipient,
             sender,
             Some(&input),
             value,
-            create2_salt,
             code_address,
             None,
         );
@@ -761,12 +774,12 @@ mod tests {
         assert_eq!(ret.flags(), 44);
         assert_eq!(ret.depth(), 66);
         assert_eq!(ret.gas(), 4466);
+        assert_eq!(ret.state_gas(), 77);
         assert_eq!(*ret.recipient(), recipient);
         assert_eq!(*ret.sender(), sender);
         assert!(ret.input().is_some());
         assert_eq!(*ret.input().unwrap(), input);
         assert_eq!(*ret.value(), value);
-        assert_eq!(*ret.create2_salt(), create2_salt);
         assert_eq!(*ret.code_address(), code_address);
     }
 
@@ -775,7 +788,6 @@ mod tests {
         let recipient = Address { bytes: [32u8; 20] };
         let sender = Address { bytes: [128u8; 20] };
         let value = Uint256 { bytes: [0u8; 32] };
-        let create2_salt = Bytes32 { bytes: [255u8; 32] };
         let code_address = Address { bytes: [64u8; 20] };
         let code = vec![0x5f, 0x5f, 0xfd];
 
@@ -784,11 +796,11 @@ mod tests {
             44,
             66,
             4466,
+            77,
             recipient,
             sender,
             None,
             value,
-            create2_salt,
             code_address,
             Some(&code),
         );
@@ -797,10 +809,10 @@ mod tests {
         assert_eq!(ret.flags(), 44);
         assert_eq!(ret.depth(), 66);
         assert_eq!(ret.gas(), 4466);
+        assert_eq!(ret.state_gas(), 77);
         assert_eq!(*ret.recipient(), recipient);
         assert_eq!(*ret.sender(), sender);
         assert_eq!(*ret.value(), value);
-        assert_eq!(*ret.create2_salt(), create2_salt);
         assert_eq!(*ret.code_address(), code_address);
         assert!(ret.code().is_some());
         assert_eq!(*ret.code().unwrap(), code);
@@ -811,7 +823,6 @@ mod tests {
         let recipient = Address { bytes: [32u8; 20] };
         let sender = Address { bytes: [128u8; 20] };
         let value = Uint256 { bytes: [0u8; 32] };
-        let create2_salt = Bytes32 { bytes: [255u8; 32] };
         let code_address = Address { bytes: [64u8; 20] };
 
         let msg = ffi::evmc_message {
@@ -819,12 +830,12 @@ mod tests {
             flags: 44,
             depth: 66,
             gas: 4466,
+            state_gas: 77,
             recipient,
             sender,
             input_data: std::ptr::null(),
             input_size: 0,
             value,
-            create2_salt,
             code_address,
             code: std::ptr::null(),
             code_size: 0,
@@ -836,11 +847,11 @@ mod tests {
         assert_eq!(ret.flags(), msg.flags);
         assert_eq!(ret.depth(), msg.depth);
         assert_eq!(ret.gas(), msg.gas);
+        assert_eq!(ret.state_gas(), msg.state_gas);
         assert_eq!(*ret.recipient(), msg.recipient);
         assert_eq!(*ret.sender(), msg.sender);
         assert!(ret.input().is_none());
         assert_eq!(*ret.value(), msg.value);
-        assert_eq!(*ret.create2_salt(), msg.create2_salt);
         assert_eq!(*ret.code_address(), msg.code_address);
         assert!(ret.code().is_none());
     }
@@ -851,7 +862,6 @@ mod tests {
         let recipient = Address { bytes: [32u8; 20] };
         let sender = Address { bytes: [128u8; 20] };
         let value = Uint256 { bytes: [0u8; 32] };
-        let create2_salt = Bytes32 { bytes: [255u8; 32] };
         let code_address = Address { bytes: [64u8; 20] };
 
         let msg = ffi::evmc_message {
@@ -859,12 +869,12 @@ mod tests {
             flags: 44,
             depth: 66,
             gas: 4466,
+            state_gas: 77,
             recipient,
             sender,
             input_data: input.as_ptr(),
             input_size: input.len(),
             value,
-            create2_salt,
             code_address,
             code: std::ptr::null(),
             code_size: 0,
@@ -876,12 +886,12 @@ mod tests {
         assert_eq!(ret.flags(), msg.flags);
         assert_eq!(ret.depth(), msg.depth);
         assert_eq!(ret.gas(), msg.gas);
+        assert_eq!(ret.state_gas(), msg.state_gas);
         assert_eq!(*ret.recipient(), msg.recipient);
         assert_eq!(*ret.sender(), msg.sender);
         assert!(ret.input().is_some());
         assert_eq!(*ret.input().unwrap(), input);
         assert_eq!(*ret.value(), msg.value);
-        assert_eq!(*ret.create2_salt(), msg.create2_salt);
         assert_eq!(*ret.code_address(), msg.code_address);
         assert!(ret.code().is_none());
     }
@@ -891,7 +901,6 @@ mod tests {
         let recipient = Address { bytes: [32u8; 20] };
         let sender = Address { bytes: [128u8; 20] };
         let value = Uint256 { bytes: [0u8; 32] };
-        let create2_salt = Bytes32 { bytes: [255u8; 32] };
         let code_address = Address { bytes: [64u8; 20] };
         let code = vec![0x5f, 0x5f, 0xfd];
 
@@ -900,12 +909,12 @@ mod tests {
             flags: 44,
             depth: 66,
             gas: 4466,
+            state_gas: 77,
             recipient,
             sender,
             input_data: std::ptr::null(),
             input_size: 0,
             value,
-            create2_salt,
             code_address,
             code: code.as_ptr(),
             code_size: code.len(),
@@ -917,11 +926,11 @@ mod tests {
         assert_eq!(ret.flags(), msg.flags);
         assert_eq!(ret.depth(), msg.depth);
         assert_eq!(ret.gas(), msg.gas);
+        assert_eq!(ret.state_gas(), msg.state_gas);
         assert_eq!(*ret.recipient(), msg.recipient);
         assert_eq!(*ret.sender(), msg.sender);
         assert!(ret.input().is_none());
         assert_eq!(*ret.value(), msg.value);
-        assert_eq!(*ret.create2_salt(), msg.create2_salt);
         assert_eq!(*ret.code_address(), msg.code_address);
         assert!(ret.code().is_some());
         assert_eq!(*ret.code().unwrap(), code);
@@ -943,8 +952,7 @@ mod tests {
             blob_base_fee: Uint256::default(),
             blob_hashes: std::ptr::null(),
             blob_hashes_count: 0,
-            initcodes: std::ptr::null(),
-            initcodes_count: 0,
+            block_slot_number: 0,
         }
     }
 
@@ -975,12 +983,14 @@ mod tests {
             },
             gas_left: 2,
             gas_refund: 0,
+            state_gas: StateGas {
+                left: 0,
+                spilled: 0,
+            },
             // NOTE: we are passing the input pointer here, but for testing the lifetime is ok
             output_data: msg.input_data,
             output_size: msg.input_size,
             release: None,
-            create_address: Address::default(),
-            padding: [0u8; 4],
         }
     }
 
@@ -991,6 +1001,7 @@ mod tests {
             get_storage: None,
             set_storage: None,
             get_balance: None,
+            get_nonce: None,
             get_code_size: Some(get_dummy_code_size),
             get_code_hash: None,
             copy_code: None,
@@ -1048,11 +1059,11 @@ mod tests {
             0,
             0,
             6566,
+            0,
             test_addr,
             test_addr,
             None,
             Uint256::default(),
-            Bytes32::default(),
             test_addr,
             None,
         );
@@ -1062,8 +1073,7 @@ mod tests {
         assert_eq!(b.status_code(), StatusCode::EVMC_SUCCESS);
         assert_eq!(b.gas_left(), 2);
         assert!(b.output().is_none());
-        assert!(b.create_address().is_some());
-        assert_eq!(b.create_address().unwrap(), &Address::default());
+        assert_eq!(b.state_gas().left, 0);
     }
 
     #[test]
@@ -1081,11 +1091,11 @@ mod tests {
             0,
             0,
             6566,
+            0,
             test_addr,
             test_addr,
             Some(&data),
             Uint256::default(),
-            Bytes32::default(),
             test_addr,
             None,
         );
@@ -1096,7 +1106,6 @@ mod tests {
         assert_eq!(b.gas_left(), 2);
         assert!(b.output().is_some());
         assert_eq!(b.output().unwrap(), &data);
-        assert!(b.create_address().is_some());
-        assert_eq!(b.create_address().unwrap(), &Address::default());
+        assert_eq!(b.state_gas().left, 0);
     }
 }

@@ -27,6 +27,10 @@ func (host *testHostContext) GetBalance(addr Address) Hash {
 	return Hash{}
 }
 
+func (host *testHostContext) GetNonce(addr Address) uint64 {
+	return 0
+}
+
 func (host *testHostContext) GetCodeSize(addr Address) int {
 	return 0
 }
@@ -57,11 +61,11 @@ func (host *testHostContext) EmitLog(addr Address, topics []Hash, data []byte) {
 }
 
 func (host *testHostContext) Call(kind CallKind,
-	recipient Address, sender Address, value Hash, input []byte, gas int64, depth int,
-	static bool, salt Hash, codeAddress Address) (output []byte, gasLeft int64, gasRefund int64,
-	createAddr Address, err error) {
+	recipient Address, sender Address, value Hash, input []byte, gas int64, stateGas int64,
+	depth int, static bool, codeAddress Address) (output []byte, gasLeft int64, gasRefund int64,
+	resultStateGas StateGas, err error) {
 	output = []byte("output from testHostContext.Call()")
-	return output, gas, 0, Address{}, nil
+	return output, gas, 0, StateGas{Left: stateGas}, nil
 }
 
 func (host *testHostContext) AccessAccount(addr Address) AccessStatus {
@@ -90,7 +94,7 @@ func TestGetBlockNumberFromTxContext(t *testing.T) {
 	host := &testHostContext{}
 	addr := Address{}
 	h := Hash{}
-	result, err := vm.Execute(host, Byzantium, Call, false, false, 1, 100, addr, addr, nil, h, code)
+	result, err := vm.Execute(host, Byzantium, Call, false, false, 1, 100, 0, addr, addr, nil, h, code)
 	output := result.Output
 	gasLeft := result.GasLeft
 
@@ -121,7 +125,7 @@ func TestCall(t *testing.T) {
 	host := &testHostContext{}
 	addr := Address{}
 	h := Hash{}
-	result, err := vm.Execute(host, Byzantium, Call, false, false, 1, 100, addr, addr, nil, h, code)
+	result, err := vm.Execute(host, Byzantium, Call, false, false, 1, 100, 0, addr, addr, nil, h, code)
 	output := result.Output
 	gasLeft := result.GasLeft
 

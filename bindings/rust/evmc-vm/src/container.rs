@@ -105,8 +105,7 @@ mod tests {
             blob_base_fee: Uint256::default(),
             blob_hashes: std::ptr::null(),
             blob_hashes_count: 0,
-            initcodes: std::ptr::null(),
-            initcodes_count: 0,
+            block_slot_number: 0,
         }
     }
 
@@ -118,7 +117,6 @@ mod tests {
             version: std::ptr::null(),
             destroy: None,
             execute: None,
-            get_capabilities: None,
             set_option: None,
         };
 
@@ -129,12 +127,12 @@ mod tests {
             flags: 0,
             depth: 0,
             gas: 0,
+            state_gas: 0,
             recipient: ::evmc_sys::evmc_address::default(),
             sender: ::evmc_sys::evmc_address::default(),
             input_data: std::ptr::null(),
             input_size: 0,
             value: ::evmc_sys::evmc_uint256be::default(),
-            create2_salt: ::evmc_sys::evmc_bytes32::default(),
             code_address: ::evmc_sys::evmc_address::default(),
             code: std::ptr::null(),
             code_size: 0,
@@ -146,6 +144,7 @@ mod tests {
             get_storage: None,
             set_storage: None,
             get_balance: None,
+            get_nonce: None,
             get_code_size: None,
             get_code_hash: None,
             copy_code: None,
