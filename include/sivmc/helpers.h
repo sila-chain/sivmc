@@ -120,7 +120,12 @@ static inline struct sivmc_result sivmc_make_result(enum sivmc_status_code statu
                                                     const uint8_t* output_data,
                                                     size_t output_size)
 {
+#ifdef __cplusplus
     struct sivmc_result result = {};
+#else
+    struct sivmc_result result;
+    memset(&result, 0, sizeof(result));
+#endif
 
     if (output_size != 0)
     {
