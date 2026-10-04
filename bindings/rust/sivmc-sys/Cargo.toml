@@ -1,0 +1,16 @@
+# SIVMC: Sila VM Connector API.
+# Copyright 2019 The EVMC Authors.
+# Licensed under the Apache License, Version 2.0.
+
+[package]
+name = "sivmc-sys"
+version = "12.1.0"
+authors = ["Alex Beregszaszi <alex@rtfs.hu>"]
+license = "Apache-2.0"
+repository = "https://github.com/sila-chain/sivmc"
+description = "Bindings to SIVMC (low-level)"
+categories = ["external-ffi-bindings"]
+edition = "2018"
+
+[build-dependencies]
+bindgen = "0.69.4"

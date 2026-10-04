@@ -1,11 +1,11 @@
-# EVMC: Ethereum Client-VM Connector API.
+# SIVMC: Sila VM Connector API.
 # Copyright 2016 The EVMC Authors.
 # Licensed under the Apache License, Version 2.0.
 
 cmake_minimum_required(VERSION 3.16...3.27)
 
-if(TARGET evmc)
-    # The evmc library has been already created (probably by other submodule).
+if(TARGET sivmc)
+    # The sivmc library has been already created (probably by other submodule).
     return()
 endif()
 
@@ -16,17 +16,17 @@ include(CablePackage)
 include(CMakeDependentOption)
 include(CMakePackageConfigHelpers)
 
-option(EVMC_INSTALL "Enable EVMC installation (e.g. make install)" ON)
+option(SIVMC_INSTALL "Enable SIVMC installation (e.g. make install)" ON)
 
-option(EVMC_TESTING "Build everything (libraries, tools, examples, internal tests)" OFF)
+option(SIVMC_TESTING "Build everything (libraries, tools, examples, internal tests)" OFF)
 
-cmake_dependent_option(EVMC_TOOLS "Build EVMC tools" OFF
-    "NOT EVMC_TESTING" ON)
+cmake_dependent_option(SIVMC_TOOLS "Build SIVMC tools" OFF
+    "NOT SIVMC_TESTING" ON)
 
-cmake_dependent_option(EVMC_EXAMPLES "Build EVMC examples" OFF
-    "NOT EVMC_TESTING" ON)
+cmake_dependent_option(SIVMC_EXAMPLES "Build SIVMC examples" OFF
+    "NOT SIVMC_TESTING" ON)
 
-option(HUNTER_ENABLED "Enable Hunter package manager support" ${EVMC_TOOLS})
+option(HUNTER_ENABLED "Enable Hunter package manager support" ${SIVMC_TOOLS})
 
 if(HUNTER_ENABLED)
     set(HUNTER_CONFIGURATION_TYPES Release CACHE STRING "Build type of Hunter packages")
@@ -37,7 +37,7 @@ endif()
 
 cable_set_build_type(DEFAULT Release CONFIGURATION_TYPES Debug Release)
 
-project(evmc)
+project(sivmc)
 set(PROJECT_VERSION 12.1.0)
 
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -72,45 +72,45 @@ elseif(CABLE_COMPILER_GNU)
     set(CMAKE_CXX_FLAGS_COVERAGE "--coverage")
 endif()
 
-set(EVMC_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
+set(SIVMC_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
 
 add_subdirectory(lib)
 
-if(EVMC_TOOLS)
+if(SIVMC_TOOLS)
     add_subdirectory(tools)
 endif()
 
-if(EVMC_EXAMPLES)
+if(SIVMC_EXAMPLES)
     add_subdirectory(examples)
 endif()
 
-if(EVMC_TESTING)
+if(SIVMC_TESTING)
     enable_testing()
     add_subdirectory(test)
 endif()
 
-write_basic_package_version_file(evmcConfigVersion.cmake COMPATIBILITY ExactVersion)
+write_basic_package_version_file(sivmcConfigVersion.cmake COMPATIBILITY ExactVersion)
 
 configure_package_config_file(
     cmake/Config.cmake.in
-    evmcConfig.cmake
-    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/evmc
+    sivmcConfig.cmake
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/sivmc
 )
 
-if(EVMC_INSTALL)
-    install(DIRECTORY include/evmc DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+if(SIVMC_INSTALL)
+    install(DIRECTORY include/sivmc DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
     install(
-        EXPORT evmcTargets
-        NAMESPACE evmc::
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/evmc
+        EXPORT sivmcTargets
+        NAMESPACE sivmc::
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/sivmc
     )
     install(
         FILES
-        ${CMAKE_CURRENT_BINARY_DIR}/evmcConfig.cmake
-        ${CMAKE_CURRENT_BINARY_DIR}/evmcConfigVersion.cmake
-        cmake/EVMC.cmake
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/evmc
+        ${CMAKE_CURRENT_BINARY_DIR}/sivmcConfig.cmake
+        ${CMAKE_CURRENT_BINARY_DIR}/sivmcConfigVersion.cmake
+        cmake/SIVMC.cmake
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/sivmc
     )
 endif()
 

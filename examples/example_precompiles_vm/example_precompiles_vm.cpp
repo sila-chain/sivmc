@@ -1,4 +1,4 @@
-// EVMC: Ethereum Client-VM Connector API.
+// SIVMC: Sila VM Connector API.
 // Copyright 2019 The EVMC Authors.
 // Licensed under the Apache License, Version 2.0.
 
@@ -7,16 +7,16 @@
 
 namespace
 {
-evmc_result execute_identity(const evmc_message* msg)
+sivmc_result execute_identity(const sivmc_message* msg)
 {
-    auto result = evmc_result{};
+    auto result = sivmc_result{};
 
     // Check the gas cost.
     auto gas_cost = 15 + 3 * ((int64_t(msg->input_size) + 31) / 32);
     auto gas_left = msg->gas - gas_cost;
     if (gas_left < 0)
     {
-        result.status_code = EVMC_OUT_OF_GAS;
+        result.status_code = SIVMC_OUT_OF_GAS;
         return result;
     }
 
@@ -25,49 +25,49 @@ evmc_result execute_identity(const evmc_message* msg)
     std::copy_n(msg->input_data, msg->input_size, data);
 
     // Return the result.
-    result.status_code = EVMC_SUCCESS;
+    result.status_code = SIVMC_SUCCESS;
     result.output_data = data;
     result.output_size = msg->input_size;
-    result.release = [](const evmc_result* r) { delete[] r->output_data; };
+    result.release = [](const sivmc_result* r) { delete[] r->output_data; };
     result.gas_left = gas_left;
     return result;
 }
 
-evmc_result execute_empty(const evmc_message* msg)
+sivmc_result execute_empty(const sivmc_message* msg)
 {
-    auto result = evmc_result{};
-    result.status_code = EVMC_SUCCESS;
+    auto result = sivmc_result{};
+    result.status_code = SIVMC_SUCCESS;
     result.gas_left = msg->gas;
     return result;
 }
 
-evmc_result not_implemented()
+sivmc_result not_implemented()
 {
-    auto result = evmc_result{};
-    result.status_code = EVMC_REJECTED;
+    auto result = sivmc_result{};
+    result.status_code = SIVMC_REJECTED;
     return result;
 }
 
-evmc_result execute(evmc_vm* /*vm*/,
-                    const evmc_host_interface* /*host*/,
-                    evmc_host_context* /*context*/,
-                    enum evmc_revision rev,
-                    const evmc_message* msg,
-                    const uint8_t* /*code*/,
-                    size_t /*code_size*/)
+sivmc_result execute(sivmc_vm* /*vm*/,
+                     const sivmc_host_interface* /*host*/,
+                     sivmc_host_context* /*context*/,
+                     enum sivmc_revision rev,
+                     const sivmc_message* msg,
+                     const uint8_t* /*code*/,
+                     size_t /*code_size*/)
 {
-    // The EIP-1352 (https://eips.ethereum.org/EIPS/eip-1352) defines
+    // The SIP-1352 (https://github.com/sila-chain/SIPs/blob/main/SIPS/sip-1352.md) defines
     // the range 0 - 0xffff (2 bytes) of addresses reserved for precompiled contracts.
     // Check if the code address is within the reserved range.
 
-    constexpr auto prefix_size = sizeof(evmc_address) - 2;
+    constexpr auto prefix_size = sizeof(sivmc_address) - 2;
     const auto& addr = msg->code_address;
     // Check if the address prefix is all zeros.
     if (std::any_of(&addr.bytes[0], &addr.bytes[prefix_size], [](uint8_t x) { return x != 0; }))
     {
         // If not, reject the execution request.
-        auto result = evmc_result{};
-        result.status_code = EVMC_REJECTED;
+        auto result = sivmc_result{};
+        result.status_code = SIVMC_REJECTED;
         return result;
     }
 
@@ -87,7 +87,7 @@ evmc_result execute(evmc_vm* /*vm*/,
     case 0x0006:  // SNARKV
     case 0x0007:  // BNADD
     case 0x0008:  // BNMUL
-        if (rev < EVMC_BYZANTIUM)
+        if (rev < SIVMC_BYZANTIUM)
             return execute_empty(msg);
         return not_implemented();
 
@@ -97,10 +97,10 @@ evmc_result execute(evmc_vm* /*vm*/,
 }
 }  // namespace
 
-evmc_vm* evmc_create_example_precompiles_vm()
+sivmc_vm* sivmc_create_example_precompiles_vm()
 {
-    static struct evmc_vm vm = {
-        EVMC_ABI_VERSION, "example_precompiles_vm", PROJECT_VERSION, [](evmc_vm*) {}, execute,
+    static struct sivmc_vm vm = {
+        SIVMC_ABI_VERSION, "example_precompiles_vm", PROJECT_VERSION, [](sivmc_vm*) {}, execute,
         nullptr,
     };
     return &vm;

@@ -1,4 +1,4 @@
-# EVMC: Ethereum Client-VM Connector API.
+# SIVMC: Sila VM Connector API.
 # Copyright 2018 The EVMC Authors.
 # Licensed under the Apache License, Version 2.0.
 
@@ -24,7 +24,7 @@ macro(create_compilation_test STANDARD)
         set(target test-compile-${STANDARD})
         add_library(${target} OBJECT compilation_test.${lang})
         target_compile_features(${target} PRIVATE ${STANDARD})
-        target_include_directories(${target} PRIVATE ${EVMC_INCLUDE_DIR})
+        target_include_directories(${target} PRIVATE ${SIVMC_INCLUDE_DIR})
     else()
         message(STATUS "Compilation test SKIPPED: ${STANDARD}")
     endif()
@@ -39,5 +39,5 @@ if(HAVE_NO_EXCEPTIONS)
     add_library(test-compile-no-exceptions OBJECT compilation_test.cxx)
     target_compile_features(test-compile-no-exceptions PRIVATE cxx_std_17)
     target_compile_options(test-compile-no-exceptions PRIVATE -fno-exceptions)
-    target_include_directories(test-compile-no-exceptions PRIVATE ${EVMC_INCLUDE_DIR})
+    target_include_directories(test-compile-no-exceptions PRIVATE ${SIVMC_INCLUDE_DIR})
 endif()

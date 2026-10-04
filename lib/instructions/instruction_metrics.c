@@ -1,8 +1,8 @@
-// EVMC: Ethereum Client-VM Connector API.
+// SIVMC: Sila VM Connector API.
 // Copyright 2018 The EVMC Authors.
 // Licensed under the Apache License, Version 2.0.
 
-#include <evmc/instructions.h>
+#include <sivmc/instructions.h>
 
 /**
  * Gas cost tiers, names from Yellow Paper.
@@ -20,7 +20,7 @@ enum
      * Marks an instruction as undefined.
      *
      * The gas cost for undefined instructions is 0 because this is the cost of executing them
-     * in practice in EVM implementations.
+     * in practice in Sivm implementations.
      */
     UNDEFINED = ZERO
 };
@@ -28,12 +28,12 @@ enum
 enum
 {
     /**
-     * Defined in EIP-2929: Gas cost increases for state access opcodes.
+     * Defined in SIP-2929: Gas cost increases for state access opcodes.
      */
     WARM_STORAGE_READ_COST = 100
 };
 
-static struct evmc_instruction_metrics osaka_metrics[256] = {
+static struct sivmc_instruction_metrics osaka_metrics[256] = {
     /*           STOP = 0x00 */ {ZERO, 0, 0},
     /*            ADD = 0x01 */ {VERYLOW, 2, -1},
     /*            MUL = 0x02 */ {LOW, 2, -1},
@@ -292,7 +292,7 @@ static struct evmc_instruction_metrics osaka_metrics[256] = {
     /*   SELFDESTRUCT = 0xff */ {5000, 1, -1},
 };
 
-static struct evmc_instruction_metrics prague_metrics[256] = {
+static struct sivmc_instruction_metrics prague_metrics[256] = {
     /*           STOP = 0x00 */ {ZERO, 0, 0},
     /*            ADD = 0x01 */ {VERYLOW, 2, -1},
     /*            MUL = 0x02 */ {LOW, 2, -1},
@@ -551,7 +551,7 @@ static struct evmc_instruction_metrics prague_metrics[256] = {
     /*   SELFDESTRUCT = 0xff */ {5000, 1, -1},
 };
 
-static struct evmc_instruction_metrics cancun_metrics[256] = {
+static struct sivmc_instruction_metrics cancun_metrics[256] = {
     /*           STOP = 0x00 */ {ZERO, 0, 0},
     /*            ADD = 0x01 */ {VERYLOW, 2, -1},
     /*            MUL = 0x02 */ {LOW, 2, -1},
@@ -810,7 +810,7 @@ static struct evmc_instruction_metrics cancun_metrics[256] = {
     /*   SELFDESTRUCT = 0xff */ {5000, 1, -1},
 };
 
-static struct evmc_instruction_metrics shanghai_metrics[256] = {
+static struct sivmc_instruction_metrics shanghai_metrics[256] = {
     /*           STOP = 0x00 */ {ZERO, 0, 0},
     /*            ADD = 0x01 */ {VERYLOW, 2, -1},
     /*            MUL = 0x02 */ {LOW, 2, -1},
@@ -1069,7 +1069,7 @@ static struct evmc_instruction_metrics shanghai_metrics[256] = {
     /*   SELFDESTRUCT = 0xff */ {5000, 1, -1},
 };
 
-static struct evmc_instruction_metrics london_metrics[256] = {
+static struct sivmc_instruction_metrics london_metrics[256] = {
     /*           STOP = 0x00 */ {ZERO, 0, 0},
     /*            ADD = 0x01 */ {VERYLOW, 2, -1},
     /*            MUL = 0x02 */ {LOW, 2, -1},
@@ -1328,7 +1328,7 @@ static struct evmc_instruction_metrics london_metrics[256] = {
     /*   SELFDESTRUCT = 0xff */ {5000, 1, -1},
 };
 
-static struct evmc_instruction_metrics berlin_metrics[256] = {
+static struct sivmc_instruction_metrics berlin_metrics[256] = {
     /*           STOP = 0x00 */ {ZERO, 0, 0},
     /*            ADD = 0x01 */ {VERYLOW, 2, -1},
     /*            MUL = 0x02 */ {LOW, 2, -1},
@@ -1587,7 +1587,7 @@ static struct evmc_instruction_metrics berlin_metrics[256] = {
     /*   SELFDESTRUCT = 0xff */ {5000, 1, -1},
 };
 
-static struct evmc_instruction_metrics istanbul_metrics[256] = {
+static struct sivmc_instruction_metrics istanbul_metrics[256] = {
     /*           STOP = 0x00 */ {ZERO, 0, 0},
     /*            ADD = 0x01 */ {VERYLOW, 2, -1},
     /*            MUL = 0x02 */ {LOW, 2, -1},
@@ -1846,7 +1846,7 @@ static struct evmc_instruction_metrics istanbul_metrics[256] = {
     /*   SELFDESTRUCT = 0xff */ {5000, 1, -1},
 };
 
-static struct evmc_instruction_metrics petersburg_metrics[256] = {
+static struct sivmc_instruction_metrics petersburg_metrics[256] = {
     /*           STOP = 0x00 */ {ZERO, 0, 0},
     /*            ADD = 0x01 */ {VERYLOW, 2, -1},
     /*            MUL = 0x02 */ {LOW, 2, -1},
@@ -2105,7 +2105,7 @@ static struct evmc_instruction_metrics petersburg_metrics[256] = {
     /*   SELFDESTRUCT = 0xff */ {5000, 1, -1},
 };
 
-static struct evmc_instruction_metrics byzantium_metrics[256] = {
+static struct sivmc_instruction_metrics byzantium_metrics[256] = {
     /*           STOP = 0x00 */ {ZERO, 0, 0},
     /*            ADD = 0x01 */ {VERYLOW, 2, -1},
     /*            MUL = 0x02 */ {LOW, 2, -1},
@@ -2364,7 +2364,7 @@ static struct evmc_instruction_metrics byzantium_metrics[256] = {
     /*   SELFDESTRUCT = 0xff */ {5000, 1, -1},
 };
 
-static struct evmc_instruction_metrics tangerine_whistle_metrics[256] = {
+static struct sivmc_instruction_metrics tangerine_whistle_metrics[256] = {
     /*           STOP = 0x00 */ {ZERO, 0, 0},
     /*            ADD = 0x01 */ {VERYLOW, 2, -1},
     /*            MUL = 0x02 */ {LOW, 2, -1},
@@ -2623,7 +2623,7 @@ static struct evmc_instruction_metrics tangerine_whistle_metrics[256] = {
     /*   SELFDESTRUCT = 0xff */ {5000, 1, -1},
 };
 
-static struct evmc_instruction_metrics homestead_metrics[256] = {
+static struct sivmc_instruction_metrics homestead_metrics[256] = {
     /*           STOP = 0x00 */ {ZERO, 0, 0},
     /*            ADD = 0x01 */ {VERYLOW, 2, -1},
     /*            MUL = 0x02 */ {LOW, 2, -1},
@@ -2882,7 +2882,7 @@ static struct evmc_instruction_metrics homestead_metrics[256] = {
     /*   SELFDESTRUCT = 0xff */ {ZERO, 1, -1},
 };
 
-static struct evmc_instruction_metrics frontier_metrics[256] = {
+static struct sivmc_instruction_metrics frontier_metrics[256] = {
     /*           STOP = 0x00 */ {ZERO, 0, 0},
     /*            ADD = 0x01 */ {VERYLOW, 2, -1},
     /*            MUL = 0x02 */ {LOW, 2, -1},
@@ -3141,38 +3141,38 @@ static struct evmc_instruction_metrics frontier_metrics[256] = {
     /*   SELFDESTRUCT = 0xff */ {ZERO, 1, -1},
 };
 
-const struct evmc_instruction_metrics* evmc_get_instruction_metrics_table(
-    enum evmc_revision revision)
+const struct sivmc_instruction_metrics* sivmc_get_instruction_metrics_table(
+    enum sivmc_revision revision)
 {
     switch (revision)
     {
-    case EVMC_EXPERIMENTAL:
-    case EVMC_AMSTERDAM:
-    case EVMC_OSAKA:
+    case SIVMC_EXPERIMENTAL:
+    case SIVMC_AMSTERDAM:
+    case SIVMC_OSAKA:
         return osaka_metrics;
-    case EVMC_PRAGUE:
+    case SIVMC_PRAGUE:
         return prague_metrics;
-    case EVMC_CANCUN:
+    case SIVMC_CANCUN:
         return cancun_metrics;
-    case EVMC_SHANGHAI:
+    case SIVMC_SHANGHAI:
         return shanghai_metrics;
-    case EVMC_PARIS:
-    case EVMC_LONDON:
+    case SIVMC_PARIS:
+    case SIVMC_LONDON:
         return london_metrics;
-    case EVMC_BERLIN:
+    case SIVMC_BERLIN:
         return berlin_metrics;
-    case EVMC_ISTANBUL:
+    case SIVMC_ISTANBUL:
         return istanbul_metrics;
-    case EVMC_PETERSBURG:
+    case SIVMC_PETERSBURG:
         return petersburg_metrics;
-    case EVMC_BYZANTIUM:
+    case SIVMC_BYZANTIUM:
         return byzantium_metrics;
-    case EVMC_SPURIOUS_DRAGON:
-    case EVMC_TANGERINE_WHISTLE:
+    case SIVMC_SPURIOUS_DRAGON:
+    case SIVMC_TANGERINE_WHISTLE:
         return tangerine_whistle_metrics;
-    case EVMC_HOMESTEAD:
+    case SIVMC_HOMESTEAD:
         return homestead_metrics;
-    case EVMC_FRONTIER:
+    case SIVMC_FRONTIER:
         return frontier_metrics;
     default:
         return NULL;

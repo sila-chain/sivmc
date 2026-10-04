@@ -1,0 +1,101 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  cpp:
+    name: C/C++ (${{ matrix.compiler }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - compiler: gcc
+            cc: gcc
+            cxx: g++
+          - compiler: clang
+            cc: clang
+            cxx: clang++
+    env:
+      CC: ${{ matrix.cc }}
+      CXX: ${{ matrix.cxx }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -S . -B build -DSIVMC_TESTING=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$PWD/install
+      - name: Build
+        run: cmake --build build --parallel
+      - name: Test
+        run: ctest --test-dir build --output-on-failure --parallel 4
+      - name: Install
+        run: cmake --install build
+      - name: Install check
+        run: |
+          set -e
+          test -f install/include/sivmc/sivmc.h
+          test -f install/include/sivmc/sivmc.hpp
+          test -f install/lib/cmake/sivmc/sivmcConfig.cmake
+          test -f install/lib/cmake/sivmc/sivmcTargets.cmake
+          test -f install/lib/cmake/sivmc/SIVMC.cmake
+          test -x install/bin/sivmc-vmtester
+          if find install | grep -i evmc; then false; fi
+          grep -q "sivmc::sivmc" install/lib/cmake/sivmc/sivmcTargets.cmake
+          for lib in $(find install -name "*.a" -o -name "*.so*" -type f); do
+            if nm -A "$lib" | grep -E "evmc|EVMC|Evmc"; then false; fi
+          done
+          build/bin/sivmc --version
+          build/bin/sivmc --vm install/lib/libexample-vm.so run 600160005260206000f3 | grep -q "Result: *success"
+
+  go:
+    name: Go bindings
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+      - name: Test
+        working-directory: bindings/go/sivmc
+        run: |
+          go generate .
+          go vet .
+          go test -v .
+
+  rust:
+    name: Rust bindings
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Environment
+        run: |
+          sudo apt-get -qq update
+          sudo apt-get -yq install libclang-dev clang --no-install-recommends
+          rustup component add rustfmt
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+      - name: Build
+        run: cargo build
+      - name: Test
+        run: cargo test
+      - name: Build the VM tester
+        run: |
+          cmake -S . -B build -DSIVMC_TOOLS=ON -DSIVMC_EXAMPLES=ON
+          cmake --build build --parallel
+      - name: Test with sivmc-vmtester
+        run: build/bin/sivmc-vmtester ./target/debug/libexamplerustvm.so
+      - name: Test with sivmc-example
+        run: build/bin/sivmc-example ./target/debug/libexamplerustvm.so
+
+  identity:
+    name: Identity audit
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: No Ethereum or EVMC identity outside the legal notices
+        run: |
+          if git grep -n -iE "ethereum|evmc|eips\.|\bEIP-?[0-9]" -- ':!LICENSE' ':!cmake/cable/LICENSE' ':!AUTHORS.md' ':!.github/workflows/ci.yml' | grep -v "Copyright"; then
+            false
+          fi
+          if git ls-files | grep -iE "evmc|ethereum"; then false; fi

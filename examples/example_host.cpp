@@ -1,65 +1,65 @@
-// EVMC: Ethereum Client-VM Connector API.
+// SIVMC: Sila VM Connector API.
 // Copyright 2016 The EVMC Authors.
 // Licensed under the Apache License, Version 2.0.
 
 /// @file
-/// Example implementation of an EVMC Host.
+/// Example implementation of an SIVMC Host.
 
 #include "example_host.h"
 
-#include <evmc/evmc.hpp>
+#include <sivmc/sivmc.hpp>
 
 #include <algorithm>
 #include <map>
 #include <vector>
 
-using namespace evmc::literals;
+using namespace sivmc::literals;
 
-namespace evmc
+namespace sivmc
 {
 struct account
 {
     virtual ~account() = default;
 
-    evmc::uint256be balance = {};
+    sivmc::uint256be balance = {};
     uint64_t nonce = 0;
     std::vector<uint8_t> code;
-    std::map<evmc::bytes32, evmc::bytes32> storage;
-    std::map<evmc::bytes32, evmc::bytes32> transient_storage;
+    std::map<sivmc::bytes32, sivmc::bytes32> storage;
+    std::map<sivmc::bytes32, sivmc::bytes32> transient_storage;
 
-    virtual evmc::bytes32 code_hash() const
+    virtual sivmc::bytes32 code_hash() const
     {
         // Extremely dumb "hash" function.
-        evmc::bytes32 ret{};
+        sivmc::bytes32 ret{};
         for (const auto v : code)
             ret.bytes[v % sizeof(ret.bytes)] ^= v;
         return ret;
     }
 };
 
-using accounts = std::map<evmc::address, account>;
+using accounts = std::map<sivmc::address, account>;
 
-}  // namespace evmc
+}  // namespace sivmc
 
-class ExampleHost : public evmc::Host
+class ExampleHost : public sivmc::Host
 {
-    evmc::accounts accounts;
-    evmc_tx_context tx_context{};
+    sivmc::accounts accounts;
+    sivmc_tx_context tx_context{};
 
 public:
     ExampleHost() = default;
-    explicit ExampleHost(evmc_tx_context& _tx_context) noexcept : tx_context{_tx_context} {}
-    ExampleHost(evmc_tx_context& _tx_context, evmc::accounts& _accounts) noexcept
+    explicit ExampleHost(sivmc_tx_context& _tx_context) noexcept : tx_context{_tx_context} {}
+    ExampleHost(sivmc_tx_context& _tx_context, sivmc::accounts& _accounts) noexcept
       : accounts{_accounts}, tx_context{_tx_context}
     {}
 
-    bool account_exists(const evmc::address& addr) const noexcept final
+    bool account_exists(const sivmc::address& addr) const noexcept final
     {
         return accounts.find(addr) != accounts.end();
     }
 
-    evmc::bytes32 get_storage(const evmc::address& addr,
-                              const evmc::bytes32& key) const noexcept final
+    sivmc::bytes32 get_storage(const sivmc::address& addr,
+                               const sivmc::bytes32& key) const noexcept final
     {
         const auto account_iter = accounts.find(addr);
         if (account_iter == accounts.end())
@@ -71,18 +71,18 @@ public:
         return {};
     }
 
-    evmc_storage_status set_storage(const evmc::address& addr,
-                                    const evmc::bytes32& key,
-                                    const evmc::bytes32& value) noexcept final
+    sivmc_storage_status set_storage(const sivmc::address& addr,
+                                     const sivmc::bytes32& key,
+                                     const sivmc::bytes32& value) noexcept final
     {
         auto& account = accounts[addr];
         auto prev_value = account.storage[key];
         account.storage[key] = value;
 
-        return (prev_value == value) ? EVMC_STORAGE_ASSIGNED : EVMC_STORAGE_MODIFIED;
+        return (prev_value == value) ? SIVMC_STORAGE_ASSIGNED : SIVMC_STORAGE_MODIFIED;
     }
 
-    evmc::uint256be get_balance(const evmc::address& addr) const noexcept final
+    sivmc::uint256be get_balance(const sivmc::address& addr) const noexcept final
     {
         auto it = accounts.find(addr);
         if (it != accounts.end())
@@ -90,7 +90,7 @@ public:
         return {};
     }
 
-    uint64_t get_nonce(const evmc::address& addr) const noexcept final
+    uint64_t get_nonce(const sivmc::address& addr) const noexcept final
     {
         auto it = accounts.find(addr);
         if (it != accounts.end())
@@ -98,7 +98,7 @@ public:
         return 0;
     }
 
-    size_t get_code_size(const evmc::address& addr) const noexcept final
+    size_t get_code_size(const sivmc::address& addr) const noexcept final
     {
         auto it = accounts.find(addr);
         if (it != accounts.end())
@@ -106,7 +106,7 @@ public:
         return 0;
     }
 
-    evmc::bytes32 get_code_hash(const evmc::address& addr) const noexcept final
+    sivmc::bytes32 get_code_hash(const sivmc::address& addr) const noexcept final
     {
         auto it = accounts.find(addr);
         if (it != accounts.end())
@@ -114,7 +114,7 @@ public:
         return {};
     }
 
-    size_t copy_code(const evmc::address& addr,
+    size_t copy_code(const sivmc::address& addr,
                      size_t code_offset,
                      uint8_t* buffer_data,
                      size_t buffer_size) const noexcept final
@@ -135,22 +135,22 @@ public:
         return n;
     }
 
-    bool selfdestruct(const evmc::address& addr, const evmc::address& beneficiary) noexcept final
+    bool selfdestruct(const sivmc::address& addr, const sivmc::address& beneficiary) noexcept final
     {
         (void)addr;
         (void)beneficiary;
         return false;
     }
 
-    evmc::Result call(const evmc_message& msg) noexcept final
+    sivmc::Result call(const sivmc_message& msg) noexcept final
     {
-        return evmc::Result{EVMC_REVERT, msg.gas, 0, msg.input_data, msg.input_size};
+        return sivmc::Result{SIVMC_REVERT, msg.gas, 0, msg.input_data, msg.input_size};
     }
 
-    evmc_tx_context get_tx_context() const noexcept final { return tx_context; }
+    sivmc_tx_context get_tx_context() const noexcept final { return tx_context; }
 
     // NOLINTNEXTLINE(bugprone-exception-escape)
-    evmc::bytes32 get_block_hash(int64_t number) const noexcept final
+    sivmc::bytes32 get_block_hash(int64_t number) const noexcept final
     {
         const int64_t current_block_number = get_tx_context().block_number;
 
@@ -159,10 +159,10 @@ public:
                    0x0000000000000000000000000000000000000000000000000000000000000000_bytes32;
     }
 
-    void emit_log(const evmc::address& addr,
+    void emit_log(const sivmc::address& addr,
                   const uint8_t* data,
                   size_t data_size,
-                  const evmc::bytes32 topics[],
+                  const sivmc::bytes32 topics[],
                   size_t topics_count) noexcept final
     {
         (void)addr;
@@ -172,22 +172,22 @@ public:
         (void)topics_count;
     }
 
-    evmc_access_status access_account(const evmc::address& addr) noexcept final
+    sivmc_access_status access_account(const sivmc::address& addr) noexcept final
     {
         (void)addr;
-        return EVMC_ACCESS_COLD;
+        return SIVMC_ACCESS_COLD;
     }
 
-    evmc_access_status access_storage(const evmc::address& addr,
-                                      const evmc::bytes32& key) noexcept final
+    sivmc_access_status access_storage(const sivmc::address& addr,
+                                       const sivmc::bytes32& key) noexcept final
     {
         (void)addr;
         (void)key;
-        return EVMC_ACCESS_COLD;
+        return SIVMC_ACCESS_COLD;
     }
 
-    evmc::bytes32 get_transient_storage(const evmc::address& addr,
-                                        const evmc::bytes32& key) const noexcept override
+    sivmc::bytes32 get_transient_storage(const sivmc::address& addr,
+                                         const sivmc::bytes32& key) const noexcept override
     {
         const auto account_iter = accounts.find(addr);
         if (account_iter == accounts.end())
@@ -199,9 +199,9 @@ public:
         return {};
     }
 
-    void set_transient_storage(const evmc::address& addr,
-                               const evmc::bytes32& key,
-                               const evmc::bytes32& value) noexcept override
+    void set_transient_storage(const sivmc::address& addr,
+                               const sivmc::bytes32& key,
+                               const sivmc::bytes32& value) noexcept override
     {
         accounts[addr].transient_storage[key] = value;
     }
@@ -210,19 +210,19 @@ public:
 
 extern "C" {
 
-const evmc_host_interface* example_host_get_interface()
+const sivmc_host_interface* example_host_get_interface()
 {
-    return &evmc::Host::get_interface();
+    return &sivmc::Host::get_interface();
 }
 
-evmc_host_context* example_host_create_context(evmc_tx_context tx_context)
+sivmc_host_context* example_host_create_context(sivmc_tx_context tx_context)
 {
     auto host = new ExampleHost{tx_context};
     return host->to_context();
 }
 
-void example_host_destroy_context(evmc_host_context* context)
+void example_host_destroy_context(sivmc_host_context* context)
 {
-    delete evmc::Host::from_context<ExampleHost>(context);
+    delete sivmc::Host::from_context<ExampleHost>(context);
 }
 }

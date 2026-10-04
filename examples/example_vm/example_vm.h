@@ -1,20 +1,20 @@
-// EVMC: Ethereum Client-VM Connector API.
+// SIVMC: Sila VM Connector API.
 // Copyright 2018 The EVMC Authors.
 // Licensed under the Apache License, Version 2.0.
 
 #pragma once
 
-#include <evmc/evmc.h>
-#include <evmc/utils.h>
+#include <sivmc/sivmc.h>
+#include <sivmc/utils.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /**
- * Creates EVMC Example VM.
+ * Creates SIVMC Example VM.
  */
-EVMC_EXPORT struct evmc_vm* evmc_create_example_vm(void);
+SIVMC_EXPORT struct sivmc_vm* sivmc_create_example_vm(void);
 
 #ifdef __cplusplus
 }

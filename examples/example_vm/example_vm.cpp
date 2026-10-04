@@ -1,22 +1,22 @@
-// EVMC: Ethereum Client-VM Connector API.
+// SIVMC: Sila VM Connector API.
 // Copyright 2016 The EVMC Authors.
 // Licensed under the Apache License, Version 2.0.
 
 /// @file
-/// Example implementation of the EVMC VM interface.
+/// Example implementation of the SIVMC VM interface.
 ///
-/// This VM implements a subset of EVM instructions in simplistic, incorrect and unsafe way:
+/// This VM implements a subset of Sivm instructions in simplistic, incorrect and unsafe way:
 /// - memory bounds are not checked,
 /// - stack bounds are not checked,
-/// - most of the operations are done with 32-bit precision (instead of EVM 256-bit precision).
-/// Yet, it is capable of coping with some example EVM bytecode inputs, which is very useful
+/// - most of the operations are done with 32-bit precision (instead of Sivm 256-bit precision).
+/// Yet, it is capable of coping with some example Sivm bytecode inputs, which is very useful
 /// in integration testing. The implementation is done in simple C++ for readability and uses
 /// pure C API and some C helpers.
 
 #include "example_vm.h"
-#include <evmc/evmc.h>
-#include <evmc/helpers.h>
-#include <evmc/instructions.h>
+#include <sivmc/helpers.h>
+#include <sivmc/instructions.h>
+#include <sivmc/sivmc.h>
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
@@ -27,55 +27,55 @@
 /// This is not strictly required, but is good practice and promotes position independent code.
 namespace
 {
-/// The example VM instance struct extending the evmc_vm.
-struct ExampleVM : evmc_vm
+/// The example VM instance struct extending the sivmc_vm.
+struct ExampleVM : sivmc_vm
 {
     int verbose = 0;  ///< The verbosity level.
-    ExampleVM();      ///< Constructor to initialize the evmc_vm struct.
+    ExampleVM();      ///< Constructor to initialize the sivmc_vm struct.
 };
 
-/// The implementation of the evmc_vm::destroy() method.
-void destroy(evmc_vm* instance)
+/// The implementation of the sivmc_vm::destroy() method.
+void destroy(sivmc_vm* instance)
 {
     delete static_cast<ExampleVM*>(instance);
 }
 
 /// Example VM options.
 ///
-/// The implementation of the evmc_vm::set_option() method.
+/// The implementation of the sivmc_vm::set_option() method.
 /// VMs are allowed to omit this method implementation.
-enum evmc_set_option_result set_option(evmc_vm* instance, const char* name, const char* value)
+enum sivmc_set_option_result set_option(sivmc_vm* instance, const char* name, const char* value)
 {
     auto* vm = static_cast<ExampleVM*>(instance);
     if (std::strcmp(name, "verbose") == 0)
     {
         if (value == nullptr)
-            return EVMC_SET_OPTION_INVALID_VALUE;
+            return SIVMC_SET_OPTION_INVALID_VALUE;
 
         char* end = nullptr;
         auto v = std::strtol(value, &end, 0);
         if (end == value)  // Parsing the value failed.
-            return EVMC_SET_OPTION_INVALID_VALUE;
+            return SIVMC_SET_OPTION_INVALID_VALUE;
         if (v > 9 || v < -1)  // Not in the valid range.
-            return EVMC_SET_OPTION_INVALID_VALUE;
+            return SIVMC_SET_OPTION_INVALID_VALUE;
         vm->verbose = static_cast<int>(v);
-        return EVMC_SET_OPTION_SUCCESS;
+        return SIVMC_SET_OPTION_SUCCESS;
     }
 
-    return EVMC_SET_OPTION_INVALID_NAME;
+    return SIVMC_SET_OPTION_INVALID_NAME;
 }
 
 /// The Example VM stack representation.
 struct Stack
 {
-    evmc_uint256be items[1024] = {};  ///< The array of stack items.
-    evmc_uint256be* pointer = items;  ///< The pointer to the currently first empty stack slot.
+    sivmc_uint256be items[1024] = {};  ///< The array of stack items.
+    sivmc_uint256be* pointer = items;  ///< The pointer to the currently first empty stack slot.
 
     /// Pops an item from the top of the stack.
-    evmc_uint256be pop() { return *--pointer; }
+    sivmc_uint256be pop() { return *--pointer; }
 
     /// Pushes an item to the top of the stack.
-    void push(evmc_uint256be value) { *pointer++ = value; }
+    void push(sivmc_uint256be value) { *pointer++ = value; }
 };
 
 /// The Example VM memory representation.
@@ -84,9 +84,9 @@ struct Memory
     uint32_t size = 0;        ///< The current size of the memory.
     uint8_t data[1024] = {};  ///< The fixed-size memory buffer.
 
-    /// Expands the "active" EVM memory by the given memory region defined by
+    /// Expands the "active" Sivm memory by the given memory region defined by
     /// @p offset and @p region_size. The region of size 0 also expands the memory
-    /// (what is different behavior than EVM specifies).
+    /// (what is different behavior than Sivm specifies).
     /// Returns pointer to the beginning of the region in the memory,
     /// or nullptr if the memory cannot be expanded to the required size.
     uint8_t* expand(uint32_t offset, uint32_t region_size)
@@ -116,9 +116,9 @@ struct Memory
 };
 
 /// Creates 256-bit value out of 32-bit input.
-inline evmc_uint256be to_uint256(uint32_t x)
+inline sivmc_uint256be to_uint256(uint32_t x)
 {
-    evmc_uint256be value = {};
+    sivmc_uint256be value = {};
     value.bytes[31] = static_cast<uint8_t>(x);
     value.bytes[30] = static_cast<uint8_t>(x >> 8);
     value.bytes[29] = static_cast<uint8_t>(x >> 16);
@@ -127,39 +127,39 @@ inline evmc_uint256be to_uint256(uint32_t x)
 }
 
 /// Creates 256-bit value out of an 160-bit address.
-inline evmc_uint256be to_uint256(evmc_address address)
+inline sivmc_uint256be to_uint256(sivmc_address address)
 {
-    evmc_uint256be value = {};
+    sivmc_uint256be value = {};
     size_t offset = sizeof(value) - sizeof(address);
     std::memcpy(&value.bytes[offset], address.bytes, sizeof(address.bytes));
     return value;
 }
 
 /// Truncates 256-bit value to 32-bit value.
-inline uint32_t to_uint32(evmc_uint256be value)
+inline uint32_t to_uint32(sivmc_uint256be value)
 {
     return (uint32_t{value.bytes[28]} << 24) | (uint32_t{value.bytes[29]} << 16) |
            (uint32_t{value.bytes[30]} << 8) | (uint32_t{value.bytes[31]});
 }
 
 /// Truncates 256-bit value to 160-bit address.
-inline evmc_address to_address(evmc_uint256be value)
+inline sivmc_address to_address(sivmc_uint256be value)
 {
-    evmc_address address = {};
+    sivmc_address address = {};
     size_t offset = sizeof(value) - sizeof(address);
     std::memcpy(address.bytes, &value.bytes[offset], sizeof(address.bytes));
     return address;
 }
 
 
-/// The example implementation of the evmc_vm::execute() method.
-evmc_result execute(evmc_vm* instance,
-                    const evmc_host_interface* host,
-                    evmc_host_context* context,
-                    enum evmc_revision rev,
-                    const evmc_message* msg,
-                    const uint8_t* code,
-                    size_t code_size)
+/// The example implementation of the sivmc_vm::execute() method.
+sivmc_result execute(sivmc_vm* instance,
+                     const sivmc_host_interface* host,
+                     sivmc_host_context* context,
+                     enum sivmc_revision rev,
+                     const sivmc_message* msg,
+                     const uint8_t* code,
+                     size_t code_size)
 {
     auto* vm = static_cast<ExampleVM*>(instance);
 
@@ -175,15 +175,15 @@ evmc_result execute(evmc_vm* instance,
         // Check remaining gas, assume each instruction costs 1.
         gas_left -= 1;
         if (gas_left < 0)
-            return evmc_make_result(EVMC_OUT_OF_GAS, 0, 0, nullptr, 0);
+            return sivmc_make_result(SIVMC_OUT_OF_GAS, 0, 0, nullptr, 0);
 
         switch (code[pc])
         {
         default:
-            return evmc_make_result(EVMC_UNDEFINED_INSTRUCTION, 0, 0, nullptr, 0);
+            return sivmc_make_result(SIVMC_UNDEFINED_INSTRUCTION, 0, 0, nullptr, 0);
 
         case OP_STOP:
-            return evmc_make_result(EVMC_SUCCESS, gas_left, 0, nullptr, 0);
+            return sivmc_make_result(SIVMC_SUCCESS, gas_left, 0, nullptr, 0);
 
         case OP_ADD:
         {
@@ -196,7 +196,7 @@ evmc_result execute(evmc_vm* instance,
 
         case OP_ADDRESS:
         {
-            evmc_uint256be value = to_uint256(msg->recipient);
+            sivmc_uint256be value = to_uint256(msg->recipient);
             stack.push(value);
             break;
         }
@@ -204,7 +204,7 @@ evmc_result execute(evmc_vm* instance,
         case OP_CALLDATALOAD:
         {
             uint32_t offset = to_uint32(stack.pop());
-            evmc_uint256be value = {};
+            sivmc_uint256be value = {};
 
             if (offset < msg->input_size)
             {
@@ -218,7 +218,7 @@ evmc_result execute(evmc_vm* instance,
 
         case OP_NUMBER:
         {
-            evmc_uint256be value =
+            sivmc_uint256be value =
                 to_uint256(static_cast<uint32_t>(host->get_tx_context(context).block_number));
             stack.push(value);
             break;
@@ -227,31 +227,31 @@ evmc_result execute(evmc_vm* instance,
         case OP_MSTORE:
         {
             uint32_t index = to_uint32(stack.pop());
-            evmc_uint256be value = stack.pop();
+            sivmc_uint256be value = stack.pop();
             if (!memory.store(index, value.bytes, sizeof(value)))
-                return evmc_make_result(EVMC_FAILURE, 0, 0, nullptr, 0);
+                return sivmc_make_result(SIVMC_FAILURE, 0, 0, nullptr, 0);
             break;
         }
 
         case OP_SLOAD:
         {
-            evmc_uint256be index = stack.pop();
-            evmc_uint256be value = host->get_storage(context, &msg->recipient, &index);
+            sivmc_uint256be index = stack.pop();
+            sivmc_uint256be value = host->get_storage(context, &msg->recipient, &index);
             stack.push(value);
             break;
         }
 
         case OP_SSTORE:
         {
-            evmc_uint256be index = stack.pop();
-            evmc_uint256be value = stack.pop();
+            sivmc_uint256be index = stack.pop();
+            sivmc_uint256be value = stack.pop();
             host->set_storage(context, &msg->recipient, &index, &value);
             break;
         }
 
         case OP_MSIZE:
         {
-            evmc_uint256be value = to_uint256(memory.size);
+            sivmc_uint256be value = to_uint256(memory.size);
             stack.push(value);
             break;
         }
@@ -289,7 +289,7 @@ evmc_result execute(evmc_vm* instance,
         case OP_PUSH31:
         case OP_PUSH32:
         {
-            evmc_uint256be value = {};
+            sivmc_uint256be value = {};
             size_t num_push_bytes = size_t{code[pc]} - OP_PUSH1 + 1;
             size_t offset = sizeof(value) - num_push_bytes;
             std::memcpy(&value.bytes[offset], &code[pc + 1], num_push_bytes);
@@ -300,7 +300,7 @@ evmc_result execute(evmc_vm* instance,
 
         case OP_DUP1:
         {
-            evmc_uint256be value = stack.pop();
+            sivmc_uint256be value = stack.pop();
             stack.push(value);
             stack.push(value);
             break;
@@ -308,7 +308,7 @@ evmc_result execute(evmc_vm* instance,
 
         case OP_CALL:
         {
-            evmc_message call_msg = {};
+            sivmc_message call_msg = {};
             call_msg.gas = to_uint32(stack.pop());
             call_msg.recipient = to_address(stack.pop());
             call_msg.value = stack.pop();
@@ -323,11 +323,11 @@ evmc_result execute(evmc_vm* instance,
             uint8_t* call_output_ptr = memory.expand(call_output_offset, call_output_size);
 
             if (call_msg.input_data == nullptr || call_output_ptr == nullptr)
-                return evmc_make_result(EVMC_FAILURE, 0, 0, nullptr, 0);
+                return sivmc_make_result(SIVMC_FAILURE, 0, 0, nullptr, 0);
 
-            evmc_result call_result = host->call(context, &call_msg);
+            sivmc_result call_result = host->call(context, &call_msg);
 
-            evmc_uint256be value = to_uint256(call_result.status_code == EVMC_SUCCESS ? 1 : 0);
+            sivmc_uint256be value = to_uint256(call_result.status_code == SIVMC_SUCCESS ? 1 : 0);
             stack.push(value);
 
             if (call_output_size > call_result.output_size)
@@ -345,28 +345,28 @@ evmc_result execute(evmc_vm* instance,
             uint32_t output_size = to_uint32(stack.pop());
             uint8_t* output_ptr = memory.expand(output_offset, output_size);
             if (output_ptr == nullptr)
-                return evmc_make_result(EVMC_FAILURE, 0, 0, nullptr, 0);
+                return sivmc_make_result(SIVMC_FAILURE, 0, 0, nullptr, 0);
 
-            return evmc_make_result(EVMC_SUCCESS, gas_left, 0, output_ptr, output_size);
+            return sivmc_make_result(SIVMC_SUCCESS, gas_left, 0, output_ptr, output_size);
         }
 
         case OP_REVERT:
         {
-            if (rev < EVMC_BYZANTIUM)
-                return evmc_make_result(EVMC_UNDEFINED_INSTRUCTION, 0, 0, nullptr, 0);
+            if (rev < SIVMC_BYZANTIUM)
+                return sivmc_make_result(SIVMC_UNDEFINED_INSTRUCTION, 0, 0, nullptr, 0);
 
             uint32_t output_offset = to_uint32(stack.pop());
             uint32_t output_size = to_uint32(stack.pop());
             uint8_t* output_ptr = memory.expand(output_offset, output_size);
             if (output_ptr == nullptr)
-                return evmc_make_result(EVMC_FAILURE, 0, 0, nullptr, 0);
+                return sivmc_make_result(SIVMC_FAILURE, 0, 0, nullptr, 0);
 
-            return evmc_make_result(EVMC_REVERT, gas_left, 0, output_ptr, output_size);
+            return sivmc_make_result(SIVMC_REVERT, gas_left, 0, output_ptr, output_size);
         }
         }
     }
 
-    return evmc_make_result(EVMC_SUCCESS, gas_left, 0, nullptr, 0);
+    return sivmc_make_result(SIVMC_SUCCESS, gas_left, 0, nullptr, 0);
 }
 
 
@@ -378,11 +378,11 @@ evmc_result execute(evmc_vm* instance,
 /// @endcond
 
 ExampleVM::ExampleVM()
-  : evmc_vm{EVMC_ABI_VERSION, "example_vm", PROJECT_VERSION, ::destroy, ::execute, ::set_option}
+  : sivmc_vm{SIVMC_ABI_VERSION, "example_vm", PROJECT_VERSION, ::destroy, ::execute, ::set_option}
 {}
 }  // namespace
 
-extern "C" evmc_vm* evmc_create_example_vm()
+extern "C" sivmc_vm* sivmc_create_example_vm()
 {
     return new ExampleVM;
 }

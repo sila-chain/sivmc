@@ -1,4 +1,4 @@
-# EVMC: Ethereum Client-VM Connector API.
+# SIVMC: Sila VM Connector API.
 # Copyright 2018 The EVMC Authors.
 # Licensed under the Apache License, Version 2.0.
 
@@ -10,11 +10,11 @@ find_package(GTest CONFIG REQUIRED)
 # Disable support for std::tr1::tuple in GTest. This causes problems in Visual Studio 2015.
 set_target_properties(GTest::gtest PROPERTIES INTERFACE_COMPILE_DEFINITIONS GTEST_HAS_TR1_TUPLE=0)
 
-add_executable(evmc-vmtester vmtester.hpp vmtester.cpp tests.cpp)
-target_link_libraries(evmc-vmtester PRIVATE evmc::loader evmc::mocked_host GTest::gtest)
+add_executable(sivmc-vmtester vmtester.hpp vmtester.cpp tests.cpp)
+target_link_libraries(sivmc-vmtester PRIVATE sivmc::loader sivmc::mocked_host GTest::gtest)
 set_source_files_properties(vmtester.cpp PROPERTIES COMPILE_DEFINITIONS PROJECT_VERSION="${PROJECT_VERSION}")
-add_executable(evmc::evmc-vmtester ALIAS evmc-vmtester)
+add_executable(sivmc::sivmc-vmtester ALIAS sivmc-vmtester)
 
-if(EVMC_INSTALL)
-    install(TARGETS evmc-vmtester EXPORT evmcTargets RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+if(SIVMC_INSTALL)
+    install(TARGETS sivmc-vmtester EXPORT sivmcTargets RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()

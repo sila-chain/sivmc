@@ -1,4 +1,4 @@
-# EVMC: Ethereum Client-VM Connector API.
+# SIVMC: Sila VM Connector API.
 # Copyright 2019 The EVMC Authors.
 # Licensed under the Apache License, Version 2.0.
 
@@ -14,6 +14,6 @@ name = "examplerustvm"
 crate-type = ["staticlib", "cdylib"]
 
 [dependencies]
-evmc-sys = { path = "../../bindings/rust/evmc-sys" }
-evmc-vm = { path = "../../bindings/rust/evmc-vm" }
-evmc-declare = { path = "../../bindings/rust/evmc-declare" }
+sivmc-sys = { path = "../../bindings/rust/sivmc-sys" }
+sivmc-vm = { path = "../../bindings/rust/sivmc-vm" }
+sivmc-declare = { path = "../../bindings/rust/sivmc-declare" }

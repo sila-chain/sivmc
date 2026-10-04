@@ -1,8 +1,8 @@
-// EVMC: Ethereum Client-VM Connector API.
+// SIVMC: Sila VM Connector API.
 // Copyright 2018 The EVMC Authors.
 // Licensed under the Apache License, Version 2.0.
 
-#include <evmc/instructions.h>
+#include <sivmc/instructions.h>
 
 static const char* osaka_names[256] = {
     /* 0x00 */ "STOP",
@@ -2853,36 +2853,36 @@ static const char* frontier_names[256] = {
     /* 0xff */ "SELFDESTRUCT",
 };
 
-const char* const* evmc_get_instruction_names_table(enum evmc_revision revision)
+const char* const* sivmc_get_instruction_names_table(enum sivmc_revision revision)
 {
     switch (revision)
     {
-    case EVMC_EXPERIMENTAL:
-    case EVMC_AMSTERDAM:
-    case EVMC_OSAKA:
+    case SIVMC_EXPERIMENTAL:
+    case SIVMC_AMSTERDAM:
+    case SIVMC_OSAKA:
         return osaka_names;
-    case EVMC_PRAGUE:
+    case SIVMC_PRAGUE:
         return prague_names;
-    case EVMC_CANCUN:
+    case SIVMC_CANCUN:
         return cancun_names;
-    case EVMC_SHANGHAI:
+    case SIVMC_SHANGHAI:
         return shanghai_names;
-    case EVMC_PARIS:
+    case SIVMC_PARIS:
         return paris_names;
-    case EVMC_LONDON:
+    case SIVMC_LONDON:
         return london_names;
-    case EVMC_BERLIN:
-    case EVMC_ISTANBUL:
+    case SIVMC_BERLIN:
+    case SIVMC_ISTANBUL:
         return istanbul_names;
-    case EVMC_PETERSBURG:
+    case SIVMC_PETERSBURG:
         return petersburg_names;
-    case EVMC_BYZANTIUM:
+    case SIVMC_BYZANTIUM:
         return byzantium_names;
-    case EVMC_SPURIOUS_DRAGON:
-    case EVMC_TANGERINE_WHISTLE:
-    case EVMC_HOMESTEAD:
+    case SIVMC_SPURIOUS_DRAGON:
+    case SIVMC_TANGERINE_WHISTLE:
+    case SIVMC_HOMESTEAD:
         return homestead_names;
-    case EVMC_FRONTIER:
+    case SIVMC_FRONTIER:
         return frontier_names;
     default:
         return NULL;

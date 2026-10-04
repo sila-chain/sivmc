@@ -1,4 +1,4 @@
-# EVMC: Ethereum Client-VM Connector API.
+# SIVMC: Sila VM Connector API.
 # Copyright 2018 The EVMC Authors.
 # Licensed under the Apache License, Version 2.0.
 
@@ -8,11 +8,11 @@ hunter_add_package(GTest)
 find_package(GTest CONFIG REQUIRED)
 
 add_library(loader-mocked STATIC ${PROJECT_SOURCE_DIR}/lib/loader/loader.c)
-target_link_libraries(loader-mocked PRIVATE evmc::evmc)
-target_compile_definitions(loader-mocked PRIVATE EVMC_LOADER_MOCK=1)
+target_link_libraries(loader-mocked PRIVATE sivmc::sivmc)
+target_compile_definitions(loader-mocked PRIVATE SIVMC_LOADER_MOCK=1)
 
 add_executable(
-    evmc-unittests
+    sivmc-unittests
     cpp_test.cpp
     example_vm_test.cpp
     helpers_test.cpp
@@ -26,22 +26,22 @@ add_executable(
 )
 
 target_link_libraries(
-    evmc-unittests
+    sivmc-unittests
     PRIVATE
     loader-mocked
-    evmc::example-vm-static
-    evmc::example-precompiles-vm-static
-    evmc::instructions
-    evmc::evmc_cpp
-    evmc::tooling
+    sivmc::example-vm-static
+    sivmc::example-precompiles-vm-static
+    sivmc::instructions
+    sivmc::sivmc_cpp
+    sivmc::tooling
     GTest::gtest_main
 )
-target_include_directories(evmc-unittests PRIVATE ${PROJECT_SOURCE_DIR})
+target_include_directories(sivmc-unittests PRIVATE ${PROJECT_SOURCE_DIR})
 target_compile_options(
-    evmc-unittests PRIVATE
+    sivmc-unittests PRIVATE
     $<$<CXX_COMPILER_ID:MSVC>:-wd4068> # allow unknown pragma
 )
 
-gtest_add_tests(TARGET evmc-unittests TEST_PREFIX ${PROJECT_NAME}/unittests/ TEST_LIST unittests)
+gtest_add_tests(TARGET sivmc-unittests TEST_PREFIX ${PROJECT_NAME}/unittests/ TEST_LIST unittests)
 
 set_tests_properties(${unittests} PROPERTIES ENVIRONMENT LLVM_PROFILE_FILE=${CMAKE_BINARY_DIR}/unittests-%p.profraw)

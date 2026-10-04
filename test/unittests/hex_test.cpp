@@ -1,11 +1,11 @@
-// EVMC: Ethereum Client-VM Connector API.
+// SIVMC: Sila VM Connector API.
 // Copyright 2021 The EVMC Authors.
 // Licensed under the Apache License, Version 2.0.
 
-#include <evmc/hex.hpp>
+#include <sivmc/hex.hpp>
 #include <gtest/gtest.h>
 
-using namespace evmc;
+using namespace sivmc;
 
 TEST(hex, hex_of_byte)
 {
@@ -96,10 +96,10 @@ TEST(hex, from_hex_to_custom_type)
         uint8_t bytes[4];
     };
     constexpr auto test = [](std::string_view in) {
-        return evmc::hex({evmc::from_hex<X>(in).value().bytes, sizeof(X)});
+        return sivmc::hex({sivmc::from_hex<X>(in).value().bytes, sizeof(X)});
     };
 
-    static_assert(evmc::from_hex<X>("01").value().bytes[3] == 0x01);  // Works in constexpr.
+    static_assert(sivmc::from_hex<X>("01").value().bytes[3] == 0x01);  // Works in constexpr.
 
     EXPECT_EQ(test("f1f2f3f4"), "f1f2f3f4");
     EXPECT_EQ(test("01020304"), "01020304");
@@ -114,17 +114,17 @@ TEST(hex, from_hex_to_custom_type)
     EXPECT_EQ(test("0x01"), "00000001");
     EXPECT_EQ(test("0x"), "00000000");
 
-    EXPECT_FALSE(evmc::from_hex<X>("0"));
-    EXPECT_FALSE(evmc::from_hex<X>("1"));
-    EXPECT_FALSE(evmc::from_hex<X>("0x "));
-    EXPECT_FALSE(evmc::from_hex<X>("0xf"));
-    EXPECT_FALSE(evmc::from_hex<X>("0x 00"));
-    EXPECT_FALSE(evmc::from_hex<X>("1x"));
-    EXPECT_FALSE(evmc::from_hex<X>("1x00"));
-    EXPECT_FALSE(evmc::from_hex<X>("fx"));
-    EXPECT_FALSE(evmc::from_hex<X>("fx00"));
+    EXPECT_FALSE(sivmc::from_hex<X>("0"));
+    EXPECT_FALSE(sivmc::from_hex<X>("1"));
+    EXPECT_FALSE(sivmc::from_hex<X>("0x "));
+    EXPECT_FALSE(sivmc::from_hex<X>("0xf"));
+    EXPECT_FALSE(sivmc::from_hex<X>("0x 00"));
+    EXPECT_FALSE(sivmc::from_hex<X>("1x"));
+    EXPECT_FALSE(sivmc::from_hex<X>("1x00"));
+    EXPECT_FALSE(sivmc::from_hex<X>("fx"));
+    EXPECT_FALSE(sivmc::from_hex<X>("fx00"));
 
     // The result type is too small for the input.
-    EXPECT_FALSE(evmc::from_hex<X>("0000000000"));
-    EXPECT_FALSE(evmc::from_hex<X>("0x0000000000"));
+    EXPECT_FALSE(sivmc::from_hex<X>("0000000000"));
+    EXPECT_FALSE(sivmc::from_hex<X>("0x0000000000"));
 }

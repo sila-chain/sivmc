@@ -1,17 +1,17 @@
-// EVMC: Ethereum Client-VM Connector API.
+// SIVMC: Sila VM Connector API.
 // Copyright 2019 The EVMC Authors.
 // Licensed under the Apache License, Version 2.0.
 
 use core::str::FromStr;
-use evmc_declare::evmc_declare_vm;
-use evmc_vm::*;
+use sivmc_declare::sivmc_declare_vm;
+use sivmc_vm::*;
 
-#[evmc_declare_vm("ExampleRustVM", "12.1.0")]
+#[sivmc_declare_vm("ExampleRustVM", "12.1.0")]
 pub struct ExampleRustVM {
     verbosity: i8,
 }
 
-impl EvmcVm for ExampleRustVM {
+impl SivmcVm for ExampleRustVM {
     fn init() -> Self {
         Self { verbosity: 0 }
     }
@@ -49,7 +49,7 @@ impl EvmcVm for ExampleRustVM {
             println!("execution started");
         }
 
-        if message.kind() != MessageKind::EVMC_CALL {
+        if message.kind() != MessageKind::SIVMC_CALL {
             return ExecutionResult::failure();
         }
 
