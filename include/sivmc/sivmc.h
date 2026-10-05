@@ -950,8 +950,6 @@ enum sivmc_revision
 {
     /**
      * The Frontier revision.
-     *
-     * The one Sila launched with.
      */
     SIVMC_FRONTIER,
 
